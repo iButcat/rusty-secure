@@ -4,17 +4,17 @@ use embedded_svc::{
 };
 use esp_idf_svc::http::client::EspHttpConnection;
 use anyhow::{Result, Context, anyhow};
-use log::{info, error};
+use log::info;
 
 use crate::http::AnalysisResponse;
 
 pub struct CameraHttpClient {
     client: HttpClientTrait<EspHttpConnection>,
-    api_url: &'static str,
+    api_url: String,
 }
 
 impl CameraHttpClient {
-    pub fn new(wrapped_client: HttpClientTrait<EspHttpConnection>, api_url: &str) -> Result<Self> {
+    pub fn new(wrapped_client: HttpClientTrait<EspHttpConnection>, api_url: String) -> Result<Self> {
         Ok(Self { client: wrapped_client, api_url })
     }
 
@@ -26,7 +26,7 @@ impl CameraHttpClient {
 
         info!("Sending image ({} bytes) to {}", image_data.len(), self.api_url);
 
-        let mut request = self.client.post(self.api_url, &headers)
+        let mut request = self.client.post(&self.api_url, &headers)
             .context("Client: Failed to create POST request")?;
 
         request.write_all(image_data)

@@ -137,7 +137,7 @@ async fn main(_spawner: Spawner) {
     let camera_clone = camera_controller.clone();
     let flash_clone = flash_led.clone();
 
-    let _http_server = match CameraHttpServer::new(camera_clone, flash_clone) {
+    let _http_server = match CameraHttpServer::new(camera_clone, flash_clone, config.api_url) {
         Ok(server) => server,
         Err(e) => {
             log::error!("Failed to create HTTP server: {:?}", e);

@@ -28,6 +28,7 @@ impl<'a> CameraHttpServer<'a> {
     pub fn new(
         camera: SharedCamera<'static>,
         flash_led: SharedFlashPin<'static>,
+        api_url: &str
     ) -> Result<Self> {
         let server_configuration = Configuration {
             stack_size: 10240,
@@ -36,6 +37,8 @@ impl<'a> CameraHttpServer<'a> {
 
         let mut server = EspHttpServer::new(&server_configuration)?;
         
+        let api_url_owned = api_url.to_string();
+
         server.fn_handler::<anyhow::Error, _>("/capture", Method::Get, move |req| {
             info!("Received capture request");
 
@@ -81,7 +84,9 @@ impl<'a> CameraHttpServer<'a> {
                         let connection = EspHttpConnection::new(&http_config)
                             .context("Handler: Failed create HTTP connection")?;
                         let http_client = HttpClientTrait::wrap(connection);
-                        let mut camera_client = CameraHttpClient::new(http_client)
+
+                        let mut camera_client = CameraHttpClient::new(
+                            http_client, api_url_owned.clone())
                             .context("Handler: Failed create CameraHttpClient")?;
 
                         info!("Calling analyse_image...");
