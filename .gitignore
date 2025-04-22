@@ -1,0 +1,14 @@
+.vscode
+.env
+NOTE.txt
+
+# Secrets files need to be ignored but added on your own environment
+esp32-cam/src/config/secrets.rs
+desktop-client/src/config/secrets.rs
+api-server/src/config/secrets.rs
+esp32-main/src/config/secrets.rs
+
+.embuild
+target/
+Cargo.lock
+.DS_Store

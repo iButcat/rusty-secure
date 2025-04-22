@@ -1,0 +1,7 @@
+/target
+/Cargo.lock
+
+# Ignore secrets file
+src/config/secrets.rs 
+
+PROJECT_PLAN.md

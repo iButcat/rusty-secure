@@ -1,0 +1,10 @@
+cargo-features = ["edition2024"]
+
+[package]
+name = "desktop-client"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+google-oauth = "1.11.3"
+iced = "0.13.1"

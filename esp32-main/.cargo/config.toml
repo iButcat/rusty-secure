@@ -1,0 +1,19 @@
+[target.xtensa-esp32-none-elf]
+runner = "espflash flash --monitor"
+
+[build]
+target = "xtensa-esp32-none-elf"
+
+[unstable]
+build-std = ["core", "alloc"]
+
+[env]
+ESP_LOG = "info"
+
+# Remove the memory.x reference since it's already included in linkall.x
+[target.'cfg(target_arch = "xtensa")']
+rustflags = [
+  "-C", "opt-level=z",
+  "-C", "codegen-units=1",
+]
+

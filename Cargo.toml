@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "api-server",
+    "desktop-client",
+    "esp32-cam",
+    "esp32-main",
+]
+resolver = "2"

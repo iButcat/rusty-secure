@@ -1,0 +1,85 @@
+[package]
+edition = "2021"
+name    = "esp32-main"
+version = "0.1.0"
+
+[[bin]]
+name = "esp32-main"
+path = "./src/bin/async_main.rs"
+
+[dependencies]
+embassy-net = { version = "0.6.0", features = [
+  "dhcpv4",
+  "medium-ethernet",
+  "tcp",
+  "udp",
+  "dns",
+  "proto-ipv4"
+] }
+embedded-io = "0.6.1"
+embedded-io-async = "0.6.1"
+esp-alloc = { version = "0.7.0" }
+esp-backtrace = { version = "0.15.1", features = [
+  "esp32",
+  "exception-handler",
+  "panic-handler",
+  "println",
+] }
+esp-hal = { version = "=1.0.0-beta.0", features = ["esp32", "unstable"] }
+esp-println = { version = "0.13.0", features = ["esp32", "log"] }
+esp-wifi = { version = "0.13.0", default-features = false, features = [
+  "esp-alloc",
+  "esp-now",
+  "esp32",
+  "builtin-scheduler"
+] }
+blocking-network-stack = { git = "https://github.com/bjoernQ/blocking-network-stack.git" }
+heapless = { version = "0.8.0", default-features = false, features = ["serde"] }
+log = { version = "0.4.21" }
+smoltcp = { version = "0.12.0", default-features = false, features = [
+  "medium-ethernet",
+  "multicast",
+  "proto-dhcpv4",
+  "proto-dns",
+  "proto-ipv4",
+  "socket-dns",
+  "socket-icmp",
+  "socket-raw",
+  "socket-tcp",
+  "socket-udp",
+] }
+# for more networking protocol support see https://crates.io/crates/edge-net
+bleps = { git = "https://github.com/bjoernQ/bleps", package = "bleps", rev = "a5148d8ae679e021b78f53fd33afb8bb35d0b62e", features = [
+  "async",
+  "macros",
+] }
+critical-section = "1.2.0"
+embassy-executor = { version = "0.7.0", features = ["task-arena-size-65536"] }
+embassy-time = { version = "0.4.0", features = ["generic-queue-8"] }
+esp-hal-embassy = { version = "0.7.0", features = ["esp32"] }
+static_cell = { version = "2.1.0", features = ["nightly"] }
+embassy-sync = "0.6.2"
+embassy-net-driver = "0.2.0"
+reqwless = "0.13.0"
+embedded-nal-async = { version = "0.8.0" }
+serde = { version = "1.0.219", default-features = false, features = ["derive", "alloc"] }
+serde-json-core = "0.6.0"
+
+[patch.crates-io]
+embassy-executor-macros = { git = 'https://github.com/embassy-rs/embassy' }
+
+[profile.dev]
+# Rust debug is too slow.
+# For debug builds always builds with some optimization
+opt-level = "s"
+
+
+[profile.release]
+codegen-units    = 1     # LLVM can perform better optimizations using a single thread
+debug            = 2
+debug-assertions = false
+incremental      = false
+lto              = true
+opt-level        = "z"  # Optimize for size
+overflow-checks  = false
+panic            = "abort"

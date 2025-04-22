@@ -1,0 +1,7 @@
+/.vscode
+/.embuild
+/target
+/Cargo.lock
+
+# Ignore secrets file
+src/config/secrets.rs
