@@ -1,9 +1,4 @@
 dependencies:
-  esp32-camera:
-    source:
-      type: git
-      url: https://github.com/espressif/esp32-camera.git
-      commit: 48c2f5e8345bfa88e3ab1af03de0c6f22e9f9e9a
   idf:
     source:
       type: idf
