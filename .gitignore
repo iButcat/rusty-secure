@@ -12,3 +12,5 @@ esp32-main/src/config/secrets.rs
 target/
 Cargo.lock
 .DS_Store
+
+service-accounts.json
