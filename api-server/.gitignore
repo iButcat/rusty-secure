@@ -2,6 +2,8 @@
 /Cargo.lock
 
 # Ignore secrets file
-src/config/secrets.rs
+src/secrets.rs
+service-account.json
 
+# Other
 uploads/esp32cam_*.jpg

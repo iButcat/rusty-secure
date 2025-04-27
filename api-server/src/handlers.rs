@@ -1,21 +1,16 @@
-use actix_web::{web, App, HttpServer, HttpResponse, Responder, Error};
+use actix_web::{web, HttpResponse, Error};
+use google_cloud_storage::http::buckets::list::ListBucketsRequest;
 use std::io::Write;
-use std::sync::Mutex;
-use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::fs;
 use std::path::Path;
+use actix_web::routes;
 
-struct AppState {
-    latest_image: Mutex<Option<Vec<u8>>>,
-    analysis_results: Mutex<HashMap<String, bool>>,
-}
+use crate::AppState;
 
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body("ESP32-CAM API Server")
-}
-
-async fn post_image(
+#[routes]
+#[post("/picture")]
+pub async fn post_picture(
     body: web::Bytes,
     data: web::Data<AppState>,
 ) -> Result<HttpResponse, Error> {
@@ -49,6 +44,18 @@ async fn post_image(
             }
         }
 
+        let buckets = data.storage_client.list_buckets(&ListBucketsRequest{
+            project: "munimentum".into(),
+            max_results: None,
+            prefix: None,
+            page_token: None,
+            projection: None,
+            match_glob: None
+        }).await.unwrap();
+
+        // TODO: delete this after testing
+        println!("bucket worked with name: {}", buckets.items[0].name);
+
         let mut latest_image = data.latest_image.lock().unwrap();
         *latest_image = Some(image_data);
         
@@ -67,45 +74,4 @@ async fn post_image(
     }
     
     Ok(HttpResponse::BadRequest().body("No image data received"))
-}
-
-async fn get_status(data: web::Data<AppState>) -> impl Responder {
-    let latest_image = data.latest_image.lock().unwrap();
-    let results = data.analysis_results.lock().unwrap();
-    
-    let has_image = latest_image.is_some();
-    let latest_result = if !results.is_empty() {
-        let latest_key = results.keys().max().cloned().unwrap_or_default();
-        results.get(&latest_key).cloned().unwrap_or(false)
-    } else {
-        false
-    };
-    
-    HttpResponse::Ok().json(serde_json::json!({
-        "has_image": has_image,
-        "latest_result": latest_result,
-        "total_images": results.len()
-    }))
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let app_state = web::Data::new(AppState {
-        latest_image: Mutex::new(None),
-        analysis_results: Mutex::new(HashMap::new()),
-    });
-    
-    println!("Starting API server on 0.0.0.0:8080");
-    
-    HttpServer::new(move || {
-        App::new()
-            .app_data(app_state.clone())
-            .app_data(web::PayloadConfig::new(1 * 1024 * 1024))
-            .route("/", web::get().to(index))
-            .route("/analyse", web::post().to(post_image))
-            .route("/status", web::get().to(get_status))
-    })
-    .bind("0.0.0.0:8080")?
-    .run()
-    .await
 }
