@@ -12,3 +12,6 @@ pub use http::*;
 
 mod wifi;
 pub use wifi::*;
+
+mod net;
+pub use net::*;

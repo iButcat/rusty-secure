@@ -21,7 +21,7 @@ embedded-io-async = "0.6.1"
 esp-alloc = { version = "0.7.0" }
 esp-backtrace = { version = "0.15.1", features = [
   "esp32",
-  "exception-handler",
+  "exception-handler", 
   "panic-handler",
   "println",
 ] }

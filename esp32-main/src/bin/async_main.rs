@@ -22,13 +22,12 @@ use esp32_main::display::{LcdDisplay, DisplayMessage};
 use esp32_main::http::HttpMessage;
 use esp32_main::config::Config as ProjectConfig;
 use esp32_main::tasks::{
-    display_task, http_camera_task, led_task, sensor_task, wifi_connection
+    display_task, http_camera_task, led_task, sensor_task, wifi_connection, net_runner
 };
 use esp_hal::time::Rate;
 
 extern crate alloc;
 
-// Since we were able to add more memory, we could increase the size of the channels.
 static DISPLAY_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, DisplayMessage, 2>> = StaticCell::new();
 static LED_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, LedMessage, 1>> = StaticCell::new();
 static SENSOR_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, SensorMessage, 1>> = StaticCell::new();
@@ -39,7 +38,6 @@ static HTTP_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, HttpMessage, 1>
 static CONTROLLER: StaticCell<Interfaces<'static>> = StaticCell::new();
 static WIFI_CONTROLLER: StaticCell<WifiController<'static>> = StaticCell::new();
 
-// Reorganise this file after testing.
 #[esp_hal_embassy::main]
 async fn main(spawner: Spawner) {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
@@ -229,9 +227,4 @@ async fn main(spawner: Spawner) {
     loop {
         Timer::after(Duration::from_secs(1)).await;
     }
-}
-
-#[embassy_executor::task]
-async fn net_runner(mut runner: embassy_net::Runner<'static, &'static mut esp_wifi::wifi::WifiDevice<'static>>) {
-    runner.run().await
 }
