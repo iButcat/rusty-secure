@@ -13,4 +13,6 @@ target/
 Cargo.lock
 .DS_Store
 
+# security
 service-accounts.json
+.env
