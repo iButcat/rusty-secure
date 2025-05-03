@@ -4,7 +4,7 @@ use mongodb::Client as MongoClient;
 use dotenv::dotenv;
 
 mod handlers;
-use handlers::{post_picture, status};
+use handlers::{post_picture, get_status, patch_authorised};
 
 mod models;
 
@@ -60,7 +60,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_state.clone())
             .app_data(web::PayloadConfig::new(1 * 1024 * 1024))
             .service(post_picture)
-            .service(status)
+            .service(get_status)
+            .service(patch_authorised)
     })
     .bind("0.0.0.0:8080")?
     .run()

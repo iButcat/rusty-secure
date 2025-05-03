@@ -6,7 +6,6 @@ use std::env;
 pub struct Config {
     pub database_name: String,
     pub bucket_name: String,
-    pub project_id: String,
     pub mongodb_url: String,
     pub credentials_path: String,
 }
@@ -21,9 +20,6 @@ impl Config {
             bucket_name: Self::value_or_fallback(
                 env::var("BUCKET_NAME").ok(),
                 "default".to_string()
-            ),
-            project_id: Self::value_or_panic(
-                env::var("PROJECT_ID").ok()
             ),
             mongodb_url: Self::value_or_fallback(
                 env::var("MONGODB_URL").ok(),

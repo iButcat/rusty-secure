@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use bson::Uuid;
+use bson::{uuid, Uuid};
 
 use crate::models::{Picture, Status};
 
@@ -44,4 +44,9 @@ impl StatusResponse {
             updated_at: status.updated_at
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthorisedPatchRequest {
+    pub authorised: bool
 }
