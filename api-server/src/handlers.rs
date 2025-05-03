@@ -12,7 +12,7 @@ use crate::{payloads, AppState};
 use crate::models::{Picture, Status};
 
 static GOOGLE_STORAGE_BASE_URL: &str = "https://storage.cloud.google.com";
-static GOOGLE_STORAGE_BASE_PATH: &str = "/uploads";
+static GOOGLE_STORAGE_BASE_PATH: &str = "/uploads/";
 
 #[routes]
 #[post("/picture")]
@@ -56,13 +56,10 @@ pub async fn post_picture(
             }
         };
 
-        println!("GCS Object Name: {}", object.name);
-        println!("GCS Media Link: {}", object.media_link);
-
         let url = format!(
-            "{}/{}/{}", 
+            "{}{}{}", 
             GOOGLE_STORAGE_BASE_URL.to_string(),
-            GOOGLE_STORAGE_BASE_URL,
+            GOOGLE_STORAGE_BASE_PATH,
             object_name
         );
         let new_picture = Picture::new(object_name_copy, url);
