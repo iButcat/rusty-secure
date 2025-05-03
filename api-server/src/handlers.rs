@@ -4,10 +4,12 @@ use google_cloud_storage::http::objects::upload::{
     UploadObjectRequest, 
     UploadType
 };
+use bson::Uuid;
 use std::time::{SystemTime, UNIX_EPOCH};
 use actix_web::routes;
 use mongodb::bson::doc;
 
+use crate::payloads::StatusResponse;
 use crate::{payloads, AppState};
 use crate::models::{Picture, Status};
 
@@ -101,30 +103,54 @@ pub async fn post_picture(
 #[get("/status/{id}")]
 pub async fn status(path: web::Path<String>, data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     let status_id = path.into_inner();
-    println!("Is there an id: {} ?", status_id);
+    let status_uuid = match Uuid::parse_str(&status_id) {
+        Ok(uuid) => uuid,
+        Err(_) => {
+            return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Invalid status ID format. Expected UUID"
+            })));
+        }
+    };
 
     let status_result = data.mongo_client
         .database(&data.config.database_name)
         .collection::<Status>("statuses")
-        .find_one(doc! {"id": status_id}).await;
+        .find_one(doc! {"_id": status_uuid}).await;
     
-    let status = match status_result {
-        Ok(status) => status,
+    match status_result {
+        Ok(Some(status_doc)) => {
+            let picture_result = data.mongo_client
+                .database(&data.config.database_name)
+                .collection::<Picture>("pictures")
+                .find_one(doc! {"_id": status_doc.picture_id}).await;
+            
+            match picture_result {
+                Ok(Some(picture_doc)) => {
+                    let status_response = StatusResponse::new(status_doc, picture_doc);
+                    Ok(HttpResponse::Ok().json(status_response))
+                },
+                Ok(None) => {
+                    Ok(HttpResponse::NotFound().json(serde_json::json!({
+                        "error": "Associated picture not found"
+                    })))
+                },
+                Err(e) => {
+                    eprintln!("Database error fetching picture: {}", e);
+                    Ok(HttpResponse::InternalServerError().json(serde_json::json!({
+                        "error": "Error retrieving associated picture"
+                    })))
+                }
+            }
+        },
+        Ok(None) => {
+            Ok(HttpResponse::NotFound().json(serde_json::json!({
+                "error": "Status not found"
+            })))
+        },
         Err(e) => {
             eprintln!("Database error: {}", e);
-            return Ok(HttpResponse::InternalServerError().json(serde_json::json!({
+            Ok(HttpResponse::InternalServerError().json(serde_json::json!({
                 "error": "Database error occurred"
-            })))
-        }
-    };
-
-    match status {
-        Some(status_doc) => {
-            Ok(HttpResponse::Ok().json(status_doc))
-        },
-        None => {
-            Ok(HttpResponse::NotFound().json(serde_json::json!({
-                "error": "Satus not found"
             })))
         }
     }

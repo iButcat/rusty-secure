@@ -1,6 +1,5 @@
 use mongodb::{bson::doc, Client, options::ClientOptions};
 
-
 pub async fn init_mongo_client(url: String, database_name: String) -> mongodb::error::Result<Client> {
     let mut client_options = ClientOptions::parse(url).await?;
 

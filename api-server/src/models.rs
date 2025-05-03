@@ -1,9 +1,10 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use bson::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Status {
+    #[serde(rename = "_id")]
     pub id: Uuid,
     pub picture_id: Uuid,
     pub authorised: bool,
@@ -12,9 +13,9 @@ pub struct Status {
 }
 
 impl Status {
-    pub fn new(picture_id: uuid::Uuid) -> Self {
+    pub fn new(picture_id: Uuid) -> Self {
         Self {
-            id: Uuid::new_v4(),
+            id: Uuid::new(),
             picture_id,
             authorised: false,
             created_at: Local::now(),
@@ -25,6 +26,7 @@ impl Status {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Picture {
+    #[serde(rename = "_id")]
     pub id: Uuid,
     pub name: String,
     pub url: String,
@@ -35,7 +37,7 @@ pub struct Picture {
 impl Picture {
     pub fn new(name: String, url: String) -> Self {
         Self {
-            id: Uuid::new_v4(),
+            id: Uuid::new(),
             name,
             url,
             created_at: Local::now(),
