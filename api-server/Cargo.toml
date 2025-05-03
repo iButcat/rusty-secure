@@ -11,6 +11,7 @@ path = "./src/server.rs"
 actix-multipart = "0.7.2"
 actix-web = "4.9.0"
 chrono = { version = "0.4.40", features = ["serde"] }
+dotenv = "0.15.0"
 futures-util = "0.3.31"
 google-cloud-storage = "0.24.0"
 mongodb = "3.2.3"

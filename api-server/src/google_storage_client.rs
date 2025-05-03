@@ -1,21 +1,20 @@
 use std::{fs, path::Path};
 use google_cloud_storage::client::{ClientConfig, Client};
 
-pub async fn init_google_storage_client() -> Result<Client, ()> {
-    let credentials_path = "service-account.json";
+use crate::error::Error;
 
-    if !Path::new(credentials_path).exists() {
-        // TODO: handle error correctly
-        println!("Service account not found at: {}", credentials_path);
-        return Err(())
+pub async fn init_google_storage_client(path: String) -> Result<Client,  Error> {
+    if !Path::new(&path).exists() {
+        println!("Service account not found at: {}", path);
+        return Err(Error::WithText("Service account not found".into()))
     };
 
-    let credentials_json = fs::read_to_string(credentials_path).unwrap();
+    let credentials_json = fs::read_to_string(path).unwrap();
 
-    let config = ClientConfig::default().with_credentials(
-            // TODO: handle error, we can't use "?"
+    let _ = match ClientConfig::default().with_credentials(
             serde_json::from_str(&credentials_json).unwrap()
-    ).await.unwrap();
-        
-    Ok(Client::new(config))
+    ).await {
+        Ok(config) => return Ok(Client::new(config)),
+        Err(e) => return Err(Error::WithText(e.to_string()))
+    };
 }

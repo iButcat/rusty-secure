@@ -4,6 +4,4 @@
 # Ignore secrets file
 src/secrets.rs
 service-account.json
-
-# Other
-uploads/esp32cam_*.jpg
+.env
