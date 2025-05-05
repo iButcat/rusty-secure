@@ -41,7 +41,6 @@ impl LcdDisplay {
 
     async fn write_4bits(&mut self, value: u8) -> Result<(), ()> {
         let data = value | LCD_BACKLIGHT;
-        info!("I2C write: addr=0x{:02X}, data=0x{:02X}", LCD_ADDRESS, data);
         
         match self.i2c.write(LCD_ADDRESS, &[data]) {
             Ok(_) => {},

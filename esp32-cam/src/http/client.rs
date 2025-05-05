@@ -6,7 +6,7 @@ use esp_idf_svc::http::client::EspHttpConnection;
 use anyhow::{Result, Context, anyhow};
 use log::info;
 
-use crate::http::AnalysisResponse;
+use super::StatusResponse;
 
 pub struct CameraHttpClient {
     client: HttpClientTrait<EspHttpConnection>,
@@ -18,7 +18,7 @@ impl CameraHttpClient {
         Ok(Self { client: wrapped_client, api_url })
     }
 
-    pub fn analyse_image(&mut self, image_data: &[u8]) -> Result<AnalysisResponse, anyhow::Error> {
+    pub fn post_picture(&mut self, image_data: &[u8]) -> Result<StatusResponse, anyhow::Error> {
         let headers = [
             ("accept", "application/json"),
             ("Content-Type", "image/jpeg")
@@ -55,11 +55,12 @@ impl CameraHttpClient {
             return Err(anyhow!("Client: Empty response body"));
         }
 
-        let analysis_response: AnalysisResponse = serde_json::from_slice(&body_bytes)
-            .context("Client: Failed to parse response body as AnalysisResponse")?;
+        let status_response: StatusResponse = 
+            serde_json::from_slice(&body_bytes)
+            .context("Client: Failed to parse response body as StatusResponse")?;
 
-        info!("Client: Analysis response: {:?}", analysis_response);
+        info!("Client: Status response: {:?}", status_response);
         
-        Ok(analysis_response)
+        Ok(status_response)
     }
 }

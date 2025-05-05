@@ -38,8 +38,7 @@ impl UltrasonicSensor {
         let pulse_duration = pulse_start.elapsed();
 
         let distance_cm = (pulse_duration.as_micros() as u32 * 343) / 20000;
-
-        info!("Distance: {} cm", distance_cm);
+        
         Ok(distance_cm)
     }
 }

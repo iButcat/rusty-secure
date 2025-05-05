@@ -23,8 +23,6 @@ pub async fn sensor_task(
     display_sender.send(DisplayMessage::Text(init_text)).await;
 
     measuring = true;
-    // TODO: Remove this after testing.
-    info!("Measuring distance...");
 
     loop {
         

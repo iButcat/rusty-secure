@@ -13,9 +13,9 @@ use log::{info, error};
 use anyhow::{Result, Context};
 use serde_json;
 
-use crate::http::AnalysisResponse;
 use crate::cam::camera_controller::CameraController;
 use crate::http::client::CameraHttpClient;
+use crate::http::StatusResponse;
 
 type SharedFlashPin<'a> = Arc<StdMutex<PinDriver<'a, Gpio4, Output>>>;
 type SharedCamera<'a> = Arc<BlockingMutex<CriticalSectionRawMutex, CameraController<'a>>>;
@@ -79,7 +79,7 @@ impl<'a> CameraHttpServer<'a> {
                 Some(data) => {
                     info!("Image captured, size: {} bytes", data.len());
 
-                    let analysis_result: Result<AnalysisResponse, anyhow::Error> = {
+                    let status_result: Result<StatusResponse, anyhow::Error> = {
                         let http_config = HttpConfig::default();
                         let connection = EspHttpConnection::new(&http_config)
                             .context("Handler: Failed create HTTP connection")?;
@@ -89,14 +89,14 @@ impl<'a> CameraHttpServer<'a> {
                             http_client, api_url_owned.clone())
                             .context("Handler: Failed create CameraHttpClient")?;
 
-                        info!("Calling analyse_image...");
-                        camera_client.analyse_image(&data)
+                        info!("Calling post_picture...");
+                        camera_client.post_picture(&data)
                     };
 
 
-                    let (_status_code, response_body_str) = match analysis_result {
-                        Ok(analysis_response) => {
-                            let response_body_str = serde_json::to_string(&analysis_response).unwrap();
+                    let (_status_code, response_body_str) = match status_result {
+                        Ok(status_response) => {
+                            let response_body_str = serde_json::to_string(&status_response).unwrap();
                             (200, response_body_str)
                         }
                         Err(e) => {

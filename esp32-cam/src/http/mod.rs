@@ -1,13 +1,23 @@
 pub mod server;
 pub mod client;
 
-use serde::{Deserialize, Serialize}; 
+use chrono::{DateTime, Local};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AnalysisResponse {
-    authorized: bool,
-    user_id: String,
-    user_first_name: String,
-    user_last_name: String,
-    reason: String,
+pub struct PictureResponse {
+    id: String,
+    name: String, 
+    url: String,
+    created_at: DateTime<Local>,
+    updated_at: Option<DateTime<Local>>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StatusResponse {
+    id: String,
+    picture: PictureResponse,
+    authorised: bool,
+    created_at: DateTime<Local>,
+    updated_at: Option<DateTime<Local>>
 }
