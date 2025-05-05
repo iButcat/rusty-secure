@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 use google_cloud_storage::client::{ClientConfig, Client};
 
-use crate::error::Error;
+use crate::errors::Error;
 
 pub async fn init_google_storage_client(path: String) -> Result<Client,  Error> {
     if !Path::new(&path).exists() {
