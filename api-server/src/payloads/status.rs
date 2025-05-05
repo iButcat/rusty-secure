@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use bson::{uuid, Uuid};
+use bson::Uuid;
 
 use crate::models::{Picture, Status};
 use crate::payloads::picture::PictureResponse;

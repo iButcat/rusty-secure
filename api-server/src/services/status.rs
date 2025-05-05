@@ -6,7 +6,7 @@ use std::sync::Arc;
 use super::StatusService;
 use crate::repositories::{StatusRepository, PictureRepository};
 use crate::models::{Status, Picture};
-use crate::payloads::{StatusResponse, PictureResponse, AuthorisedPatchRequest};
+use crate::payloads::StatusResponse;
 use crate::errors::Error;
 
 pub struct StatusServiceImpl {

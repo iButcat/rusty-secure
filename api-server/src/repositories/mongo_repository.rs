@@ -1,5 +1,4 @@
 use mongodb::{bson::doc, Client, Collection};
-use mongodb::options::ReturnDocument;
 use bson::Uuid;
 use async_trait::async_trait;
 

@@ -1,8 +1,8 @@
-use actix_web::{patch, routes, web, HttpResponse, Responder};
+use actix_web::{routes, web, HttpResponse, Responder};
 use bson::Uuid;
 
 use crate::app_state::AppState;
-use crate::payloads::{StatusResponse, AuthorisedPatchRequest};
+use crate::payloads::AuthorisedPatchRequest;
 use crate::errors::Error;
 
 #[routes]

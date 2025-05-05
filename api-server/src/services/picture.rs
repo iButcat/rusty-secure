@@ -1,9 +1,8 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use std::time::{SystemTime, UNIX_EPOCH};
-use bson::Uuid;
 
-use crate::models::{Picture, Status};
+use crate::models::Picture;
 use crate::repositories::{PictureRepository, StorageRepository};
 use super::StatusService;
 use super::PictureService;
