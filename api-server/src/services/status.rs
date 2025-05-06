@@ -1,6 +1,7 @@
 
 use bson::Uuid;
 use async_trait::async_trait;
+use chrono::DateTime;
 use std::sync::Arc;
 
 use super::StatusService;
@@ -49,6 +50,7 @@ impl StatusService for StatusServiceImpl {
         .ok_or_else(|| Error::NotFound(format!("Status not found for ID: {}", status_id)))?;
 
         updated_status.authorised = authorised;
+        updated_status.updated_at = Some(chrono::Local::now());
 
         let picture = self.find_picture_by_id(updated_status.picture_id).await?;
 
