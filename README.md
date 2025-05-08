@@ -1,6 +1,6 @@
 # Rusty Secure 🔒
 
-**Rusty Secure** is a comprehensive IoT security system implemented entirely in Rust, demonstrating advanced embedded development with ESP32 microcontrollers, WiFi connectivity, computer vision, and a complete client-server architecture.
+**Rusty Secure** is a comprehensive IoT security system implemented entirely in Rust, demonstrating advanced embedded development with ESP32 microcontrollers, WiFi connectivity, and a complete client-server architecture.
 
 ## System Overview
 
