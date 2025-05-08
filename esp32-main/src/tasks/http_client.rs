@@ -6,7 +6,7 @@ use embassy_net::tcp::client::{TcpClient, TcpClientState};
 use embassy_net::dns::DnsSocket;
 use static_cell::StaticCell;
 
-use crate::http::CamAuthResponse;
+use crate::http::CamStatusResponse;
 use crate::http::HttpMessage;
 use crate::http::client::{HttpClient, ClientError};
 
@@ -47,41 +47,21 @@ pub async fn http_camera_task(
             HttpMessage::RequestCapture => {
                 info!("Received RequestCapture message");
                 match client.request_camera_capture().await {
-                    Ok(auth_response) => {
-                        info!("Received auth response: {:?}", auth_response);
-                        sender.send(HttpMessage::AuthResult(auth_response)).await;
+                    Ok(status_response) => {
+                        info!("Received auth response: {:?}", status_response);
+                        sender.send(HttpMessage::StatusResult(status_response)).await;
                     },
                     Err(e) => {
                         error!("Request attempt failed: {:?}", e);
-                        let failure_reason = match e {
-                                ClientError::RequestCreationFailed => "Request Failed",
-                                ClientError::SendFailed => "Send Failed",
-                                ClientError::StatusError(_) => "Status Error",
-                                ClientError::BodyReadFailed => "Body Read Error",
-                                ClientError::JsonParseFailed => "JSON Parse Error",
-                            };
-                            
-                            let user_id = heapless::String::<64>::new();
-                            let user_first_name = heapless::String::<64>::new();
-                            let user_last_name = heapless::String::<64>::new();
-                            let mut reason = heapless::String::<128>::new();
-                            
-                            let _ = reason.push_str(failure_reason);
-                            
-                            sender.send(HttpMessage::AuthResult(CamAuthResponse {
-                                authorized: false,
-                                user_id,
-                                user_first_name,
-                                user_last_name,
-                                reason,
-                            })).await;
+                        sender.send(HttpMessage::RequestFailed(e.clone())).await;
                     }
                 }
             },
-            // Handle other messages if needed, otherwise ignore
-            // Example: Handle the AuthResult if this task needs to react to it too
-            HttpMessage::AuthResult(result) => {
-                 info!("AuthResult({:?}) received in http_camera_task - likely for debugging or further processing", result);
+            HttpMessage::RequestFailed(client_error) => {
+                info!("RequestFailed({:?}) received in http_camera_task - debugging", client_error);
+            },
+            HttpMessage::StatusResult(result) => {
+                 info!("StatusResult({:?}) received in http_camera_task - debugging", result);
              }
         }
     }

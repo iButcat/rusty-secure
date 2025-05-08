@@ -6,7 +6,8 @@ pub use lcd::LcdDisplay;
 #[derive(Clone)]
 pub enum DisplayMessage {
     Text(String<64>),
-    Clear
+    Clear,
+    AuthStatus(bool)
 }
 
 impl DisplayMessage {
@@ -16,5 +17,9 @@ impl DisplayMessage {
 
     pub fn new_clear() -> Self {
         DisplayMessage::Clear
+    }
+
+    pub fn new_auth_status(status: bool) -> Self {
+        DisplayMessage::AuthStatus(status)
     }
 }

@@ -11,10 +11,16 @@ use esp_hal::gpio::{Input, Level, Output, InputConfig, OutputConfig};
 use esp_hal::i2c::master::{I2c, Config as I2cConfig, BusTimeout};
 use esp_hal::timer::timg::TimerGroup;
 use esp_hal::rng::Rng;
-use esp_wifi::wifi::{ClientConfiguration, Configuration, Interfaces, WifiController};
+use esp_wifi::wifi::{
+    ClientConfiguration, 
+    Configuration, 
+    Interfaces, 
+    WifiController
+};
 use static_cell::StaticCell;
 use log::info;
 use esp_backtrace as _;
+use embassy_net::StackResources;
 
 use esp32_main::sensor::{SensorMessage, UltrasonicSensor};
 use esp32_main::light::{Led, LedMessage};
@@ -22,7 +28,7 @@ use esp32_main::display::{LcdDisplay, DisplayMessage};
 use esp32_main::http::HttpMessage;
 use esp32_main::config::Config as ProjectConfig;
 use esp32_main::tasks::{
-    display_task, http_camera_task, led_task, sensor_task, wifi_connection, net_runner
+    display_task, http_camera_task, http_server_task, led_task, net_runner, sensor_task, wifi_connection
 };
 use esp_hal::time::Rate;
 
@@ -33,7 +39,7 @@ static LED_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, LedMessage, 1>> 
 static SENSOR_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, SensorMessage, 1>> = StaticCell::new();
 static PROJECT_CONFIG: StaticCell<ProjectConfig> = StaticCell::new();
 static STACK_INIT: StaticCell<Stack<'static>> = StaticCell::new();
-static STACK_RESOURCES: StaticCell<embassy_net::StackResources<3>> = StaticCell::new();
+static STACK_RESOURCES: StaticCell<StackResources<4>> = StaticCell::new();
 static HTTP_CHANNEL: StaticCell<Channel<CriticalSectionRawMutex, HttpMessage, 1>> = StaticCell::new();
 static CONTROLLER: StaticCell<Interfaces<'static>> = StaticCell::new();
 static WIFI_CONTROLLER: StaticCell<WifiController<'static>> = StaticCell::new();
@@ -182,18 +188,19 @@ async fn main(spawner: Spawner) {
         | ((mac_address[4] as u64) << 8)
         | (mac_address[5] as u64);
 
-    let config = embassy_net::Config::dhcpv4(embassy_net::DhcpConfig::default());
-    
-    let (stack, runner) = embassy_net::new(
+    let network_config = embassy_net::Config::dhcpv4(embassy_net::DhcpConfig::default());
+    let stack_resources_ref = STACK_RESOURCES.init(StackResources::<4>::new());
+
+    let (stack_instance, net_runner_instance) = embassy_net::new(
         &mut interfaces_ref.sta, 
-        config,
-        STACK_RESOURCES.init(embassy_net::StackResources::<3>::new()),
+        network_config,
+        stack_resources_ref,
         mac_u64
     );
     
-    let stack = STACK_INIT.init(stack);
+    let stack = STACK_INIT.init(stack_instance);
 
-    spawner.spawn(net_runner(runner)).unwrap();
+    spawner.spawn(net_runner(net_runner_instance)).unwrap();
 
     info!("WiFi initialized, delaying before starting task...");
     Timer::after(Duration::from_millis(1000)).await;
@@ -221,6 +228,15 @@ async fn main(spawner: Spawner) {
     } else {
         info!("Failed to spawn HTTP task");
     }
+
+    let http_server_task = spawner.spawn(
+        http_server_task(&*stack, display_sender));
+    if let Ok(_http_server_task) = http_server_task {
+        info!("HTTP Server task spawned succesfully");
+    } else {
+        info!("Failed to spawn HTTP Server task");
+    }
+
 
     Timer::after(Duration::from_secs(10)).await;
 

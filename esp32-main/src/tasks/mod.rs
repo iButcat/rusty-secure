@@ -7,8 +7,11 @@ pub use led::*;
 mod sensor;
 pub use sensor::*;
 
-mod http;
-pub use http::*;
+mod http_client;
+pub use http_client::*;
+
+mod http_server;
+pub use http_server::*;
 
 mod wifi;
 pub use wifi::*;
