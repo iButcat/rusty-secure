@@ -11,6 +11,9 @@ This project demonstrates a fully-functional IoT security system with the follow
 3. **API Server** (`api-server`): Rust-based web server handling image processing and authorization
 4. **Desktop Client** (`desktop-client`): Cross-platform GUI application for system management (planned)
 
+
+## TODO: add the system architecture 
+
 ![System Architecture](https://raw.githubusercontent.com/username/rusty-secure/main/docs/architecture.png)
 
 ## Key Features
@@ -131,15 +134,13 @@ The ESP32-CAM board already includes the OV2640 camera module and a flash LED on
 #### ESP32 Main Controller
 ```bash
 cd esp32-main
-cargo build --release
-espflash flash --monitor
+cargo +esp run --release
 ```
 
 #### ESP32-CAM Module
 ```bash
 cd esp32-cam
-cargo build --release
-espflash flash --monitor
+cargo +esp run --release
 ```
 
 #### API Server

@@ -15,8 +15,7 @@ git submodule update --init
 3. Build and flash the firmware:
 
 ```bash
-cargo build --release
-espflash flash --monitor
+cargo +esp run --release
 ```
 
 ## Notes
