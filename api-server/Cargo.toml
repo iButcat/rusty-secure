@@ -11,6 +11,7 @@ path = "./src/server.rs"
 actix-multipart = "0.7.2"
 actix-web = "4.9.0"
 async-trait = "0.1.88"
+reqwest = { version = "0.12.15", features = ["json"] }
 bson = "2.14.0"
 chrono = { version = "0.4.40", features = ["serde"] }
 dotenv = "0.15.0"

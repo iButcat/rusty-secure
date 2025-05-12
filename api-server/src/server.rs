@@ -72,7 +72,8 @@ async fn main() -> std::io::Result<()> {
 
     let status_service = Arc::new(StatusServiceImpl::new(
         status_repository.clone(), 
-        picture_repository.clone()
+        picture_repository.clone(),
+        config.http_server_address
     ));
     let picture_service = Arc::new(PictureServiceImpl::new(
         picture_repository, 

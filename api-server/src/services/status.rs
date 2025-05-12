@@ -1,7 +1,8 @@
-
+use actix_web::HttpResponse;
 use bson::Uuid;
 use async_trait::async_trait;
 use chrono::DateTime;
+use futures_util::TryStreamExt;
 use std::sync::Arc;
 
 use super::StatusService;
@@ -12,15 +13,21 @@ use crate::errors::Error;
 
 pub struct StatusServiceImpl {
     status_repo: Arc<dyn StatusRepository>,
-    picture_repo: Arc<dyn PictureRepository>
+    picture_repo: Arc<dyn PictureRepository>,
+
+    http_server_address: String
 }
 
 impl StatusServiceImpl {
-    pub fn new(status_repo: Arc<dyn StatusRepository>, 
-        picture_repo: Arc<dyn PictureRepository>) -> Self {
+    pub fn new(
+        status_repo: Arc<dyn StatusRepository>, 
+        picture_repo: Arc<dyn PictureRepository>,
+        http_server_address: String
+) -> Self {
         Self {
             status_repo,
-            picture_repo
+            picture_repo,
+            http_server_address
         }
     }
 
@@ -64,5 +71,42 @@ impl StatusService for StatusServiceImpl {
         let _initial_status = self.status_repo.insert(&status_model).await?;
 
         Ok(StatusResponse::new(status_model, picture))
+    }
+
+    async fn send_status(&self, status_id: Uuid) -> Result<bool, Error> {
+        let status = self.status_repo.find_by_id(status_id)
+            .await?
+            .ok_or_else(|| Error::NotFound(
+                format!("Status not found for ID: {}", status_id)
+            ))?;
+        let picture = self.find_picture_by_id(status.picture_id).await?;
+        
+        let status_payload = StatusResponse::new(status, picture);
+        
+        let client = reqwest::Client::new();
+        println!("Sending status to: {}", self.http_server_address);
+        
+        match client.post("http://192.168.1.40/24:80/authorised")
+            .header("Content-Type", "application/json")
+            .json(&status_payload)
+            .send()
+            .await {
+                Ok(response) => {
+                    if response.status().is_success() {
+                        println!("Successfully sent status to HTTP Server");
+                        Ok(true)
+                    } else {
+                        let status = response.status();
+                        let error_msg = format!("HTTP Server responded with error status: {}", status);
+                        println!("{}", error_msg);
+                        Err(Error::ServiceError(error_msg))
+                    }
+                },
+                Err(err) => {
+                    let error_msg = format!("Failed to send status to HTTP Server: {}", err);
+                    println!("{}", error_msg);
+                    Err(Error::ServiceError(error_msg))
+                }
+        }
     }
 }

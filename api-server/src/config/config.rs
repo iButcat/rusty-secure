@@ -8,6 +8,7 @@ pub struct Config {
     pub bucket_name: String,
     pub mongodb_url: String,
     pub credentials_path: String,
+    pub http_server_address: String,
 }
 
 impl Config {
@@ -28,6 +29,9 @@ impl Config {
             credentials_path: Self::value_or_panic(
                 env::var("CREDENTIALS_PATH").ok()
             ),
+            http_server_address: Self::value_or_panic(
+                env::var("HTTP_SERVER_ADDRESS").ok()
+            )
         }
     }
 

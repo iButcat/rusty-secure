@@ -17,6 +17,7 @@ pub trait StatusService: Send + Sync {
         authorised: bool) -> Result<StatusResponse, Error>;
     async fn create_initial_status(&self, 
         picture_id: Uuid) -> Result<StatusResponse, Error>;
+    async fn send_status(&self, status_id: Uuid) -> Result<bool, Error>;
 }
 
 #[async_trait]
