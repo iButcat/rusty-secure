@@ -1,8 +1,5 @@
-use actix_web::HttpResponse;
 use bson::Uuid;
 use async_trait::async_trait;
-use chrono::DateTime;
-use futures_util::TryStreamExt;
 use std::sync::Arc;
 
 use super::StatusService;
@@ -86,7 +83,7 @@ impl StatusService for StatusServiceImpl {
         let client = reqwest::Client::new();
         println!("Sending status to: {}", self.http_server_address);
         
-        match client.post("http://192.168.1.40/24:80/authorised")
+        match client.post(&self.http_server_address)
             .header("Content-Type", "application/json")
             .json(&status_payload)
             .send()

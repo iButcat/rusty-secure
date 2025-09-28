@@ -9,6 +9,10 @@ pub struct Config {
     pub mongodb_url: String,
     pub credentials_path: String,
     pub http_server_address: String,
+    pub google_auth_client_id: String,
+    pub google_auth_client_secret: String,
+    pub google_auth_redirect_url: String,
+    pub google_auth_scope: String,
 }
 
 impl Config {
@@ -31,6 +35,20 @@ impl Config {
             ),
             http_server_address: Self::value_or_panic(
                 env::var("HTTP_SERVER_ADDRESS").ok()
+            ),
+            google_auth_client_id: Self::value_or_panic(
+                env::var("GOOGLE_AUTH_CLIENT_ID").ok()
+            ),
+            google_auth_client_secret: Self::value_or_panic(
+                env::var("GOOGLE_AUTH_CLIENT_SECRET").ok()
+            ),
+            google_auth_redirect_url: Self::value_or_fallback(
+                env::var("GOOGLE_AUTH_REDIRECT_URL").ok(),
+                "http://localhost:8080".to_string()
+            ),
+            google_auth_scope: Self::value_or_fallback(
+                env::var("GOOGLE_AUTH_SCOPE").ok(),
+                "openid".to_string()
             )
         }
     }

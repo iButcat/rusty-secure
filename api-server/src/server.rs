@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{net::UdpSocket, sync::Arc};
 use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 
@@ -31,13 +31,32 @@ mod config;
 use config::Config;
 use services::{PictureServiceImpl, StatusServiceImpl};
 
+use crate::{handlers::{
+    auth_url, 
+    callback, 
+    get_by_google_id
+}, 
+repositories::UserRepository, 
+services::{GoogleAuthServiceImpl, UserServiceImpl}
+};
+
 mod errors;
 
 mod services;
 
+fn get_local_ip() -> Result<String, Box<dyn std::error::Error>> {
+    let socket = UdpSocket::bind("0.0.0.0:0")?;
+    socket.connect("8.8.8.8:80")?;
+    let local_address = socket.local_addr()?;
+    Ok(local_address.ip().to_string())
+}
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let local_ip = get_local_ip().unwrap();
+    println!("local ip: {}", local_ip);
+
     dotenv().ok();
 
     let config = Config::new();
@@ -68,6 +87,7 @@ async fn main() -> std::io::Result<()> {
 
     let status_repository: Arc<dyn StatusRepository> = mongo_repo.clone();
     let picture_repository: Arc<dyn PictureRepository> = mongo_repo.clone();
+    let user_repository: Arc<dyn UserRepository> = mongo_repo.clone();
     let storage_repository: Arc<dyn StorageRepository> = gcp_repo;
 
     let status_service = Arc::new(StatusServiceImpl::new(
@@ -80,20 +100,34 @@ async fn main() -> std::io::Result<()> {
         storage_repository, 
         status_service.clone()
     ));
+    let user_service = Arc::new(UserServiceImpl::new(
+        user_repository.clone()
+    ));
+    let goolge_auth_service = Arc::new(GoogleAuthServiceImpl::new(
+        config.google_auth_client_id, 
+        config.google_auth_client_secret, 
+        config.google_auth_redirect_url, 
+        config.google_auth_scope,
+    ));
     
     println!("Starting API server on 0.0.0.0:8080");
     
     HttpServer::new(move || {
         let app_state = AppState {
             status_service: status_service.clone(),
-            picture_service: picture_service.clone()
+            picture_service: picture_service.clone(),
+            user_service: user_service.clone(),
+            goolge_auth_service: goolge_auth_service.clone(),
         };
 
-        App::new()
+    App::new()
             .app_data(web::Data::new(app_state))
             .service(post_picture)
             .service(get_status)
             .service(patch_authorised)
+            .service(auth_url)
+            .service(callback)
+            .service(get_by_google_id)
     })
     .bind("0.0.0.0:8080")?
     .run()

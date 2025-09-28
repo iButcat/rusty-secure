@@ -14,20 +14,24 @@ pub enum Error {
     NotFound(String),
     EmptyError(String),
     UuidFormatError(String),
-    InternalError(String)
+    InternalError(String),
+    ParseError(String),
+    JSONUnmarshallError(String),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::WithText(msg) => write!(f, "{}", msg),
-            Error::DatabaseError(msg) => write!(f, "{}", msg),
-            Error::StorageError(msg) => write!(f, "{}", msg),
-            Error::ServiceError(msg) => write!(f, "{}", msg),
-            Error::NotFound(msg) => write!(f, "{}", msg),
+            Error::DatabaseError(msg) => write!(f, "database error: {}", msg),
+            Error::StorageError(msg) => write!(f, "storage error: {}", msg),
+            Error::ServiceError(msg) => write!(f, "service error: {}", msg),
+            Error::NotFound(msg) => write!(f, "not found: {}", msg),
             Error::EmptyError(msg) => write!(f, "{}", msg),
-            Error::UuidFormatError(msg) => write!(f, "{}", msg),
-            Error::InternalError(msg) => write!(f, "{}", msg)
+            Error::UuidFormatError(msg) => write!(f, "error trying to format uuid: {}", msg),
+            Error::InternalError(msg) => write!(f, "internal server error: {}", msg),
+            Error::ParseError(msg) => write!(f, "error trying to parse: {}", msg),
+            Error::JSONUnmarshallError(msg) => write!(f, "error trying to unmarshall json: {}", msg),
         }
     }
 }
