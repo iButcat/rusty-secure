@@ -1,15 +1,14 @@
-use serde::{Deserialize, Serialize};
 use bson::Uuid;
+use serde::{Deserialize, Serialize};
 
 use crate::models::User;
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserResponse {
-       pub id: Uuid,
-       pub email: String,
-       pub name: String, 
-       pub picture: Option<String>,
+    pub id: Uuid,
+    pub email: String,
+    pub name: String,
+    pub picture: Option<String>,
 }
 
 impl UserResponse {

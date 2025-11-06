@@ -1,23 +1,15 @@
+use async_trait::async_trait;
 use chrono::TimeDelta;
 use oauth2::basic::BasicClient;
 use oauth2::{
-    AuthUrl, 
-    AuthorizationCode, 
-    ClientId, 
-    ClientSecret, 
-    CsrfToken, 
-    RedirectUrl, 
-    RevocationUrl, 
-    Scope, 
-    TokenResponse, 
-    TokenUrl
+    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, RedirectUrl, RevocationUrl,
+    Scope, TokenResponse, TokenUrl,
 };
-use async_trait::async_trait;
 
+use super::GoogleAuthService;
 use crate::errors::Error;
 use crate::models::Token;
 use crate::payloads::UserInfo;
-use super::GoogleAuthService;
 
 pub struct GoogleAuthServiceImpl {
     client_id: String,
@@ -35,7 +27,7 @@ impl GoogleAuthServiceImpl {
         client_id: String,
         client_secret: String,
         redirect_url: String,
-        scope: String
+        scope: String,
     ) -> Self {
         Self {
             client_id,
@@ -53,50 +45,52 @@ impl GoogleAuthServiceImpl {
 #[async_trait]
 impl GoogleAuthService for GoogleAuthServiceImpl {
     async fn get_authorisation_url(&self) -> Result<(String, String), Error> {
-        let auth_url = AuthUrl::new(
-            self.auth_url.clone()
-        ).map_err(|e| Error::ParseError(e.to_string()));
+        let auth_url =
+            AuthUrl::new(self.auth_url.clone()).map_err(|e| Error::ParseError(e.to_string()));
 
-        let token_url = TokenUrl::new(
-            self.token_url.clone()
-        ).map_err(|e| Error::ParseError(e.to_string()));
+        let token_url =
+            TokenUrl::new(self.token_url.clone()).map_err(|e| Error::ParseError(e.to_string()));
 
-        let client = BasicClient::new(
-            ClientId::new(self.client_id.clone()))
+        let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))
             .set_auth_uri(auth_url?)
             .set_token_uri(token_url?)
-            .set_redirect_uri(RedirectUrl::new(self.redirect_url.clone()).expect(
-                "Invalid redirect URL"
-            ))
+            .set_redirect_uri(
+                RedirectUrl::new(self.redirect_url.clone()).expect("Invalid redirect URL"),
+            )
             .set_revocation_url(
                 RevocationUrl::new(self.revocation_url.clone())
-                    .expect("Invalid revocation endpoints URL")
+                    .expect("Invalid revocation endpoints URL"),
             );
 
         let (authorize_url, crsf_state) = client
             .authorize_url(CsrfToken::new_random)
             .add_scopes(
-                self.scope.split_whitespace().map(|s| Scope::new(s.to_string()))
+                self.scope
+                    .split_whitespace()
+                    .map(|s| Scope::new(s.to_string())),
             )
             .url();
 
         Ok((authorize_url.to_string(), crsf_state.secret().to_string()))
     }
 
-    async fn exchange_code_for_token(&self, code: String, _state: String) -> Result<(UserInfo, Token), Error> {
+    async fn exchange_code_for_token(
+        &self,
+        code: String,
+        _state: String,
+    ) -> Result<(UserInfo, Token), Error> {
         let auth_url = AuthUrl::new(self.auth_url.clone());
-        let token_url = TokenUrl::new(self.token_url.clone())
-            .map_err(|e| Error::ParseError(e.to_string()));
+        let token_url =
+            TokenUrl::new(self.token_url.clone()).map_err(|e| Error::ParseError(e.to_string()));
 
-        let client = BasicClient::new(
-            ClientId::new(self.client_id.clone()))
+        let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))
             .set_auth_uri(auth_url.map_err(|e| Error::ParseError(e.to_string()))?)
             .set_token_uri(token_url.map_err(|e| Error::ParseError(e.to_string()))?)
-            .set_redirect_uri(RedirectUrl::new(self.redirect_url.clone())
-            .expect("Invalid redirect URL")
-        );
+            .set_redirect_uri(
+                RedirectUrl::new(self.redirect_url.clone()).expect("Invalid redirect URL"),
+            );
 
         let http_client = reqwest::Client::new();
 
@@ -105,19 +99,24 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
             .request_async(&http_client)
             .await
             .map_err(|e| Error::InternalError(e.to_string()))?;
-        
+
         let access_token = token_response.access_token().secret();
-        let refresh_token = token_response.refresh_token()
+        let refresh_token = token_response
+            .refresh_token()
             .map(|token| token.secret().to_string())
             .unwrap_or_default();
         let token_type = "Bearer".to_string();
-        let expires_at = token_response.expires_in()
+        let expires_at = token_response
+            .expires_in()
             .and_then(|duration| TimeDelta::from_std(duration).ok());
         let scopes = token_response
             .scopes()
-            .map(|scopes| scopes.iter()
-                .map(|scope| scope.to_string())
-                .collect::<Vec<String>>())
+            .map(|scopes| {
+                scopes
+                    .iter()
+                    .map(|scope| scope.to_string())
+                    .collect::<Vec<String>>()
+            })
             .unwrap_or_default();
 
         let user_info_response: reqwest::Response = http_client
@@ -127,19 +126,19 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
             .await
             .map_err(|e| Error::InternalError(e.to_string()))?;
 
-        let user_info: UserInfo = user_info_response.json()
-        .await
-        .map_err(|e| Error::JSONUnmarshallError(e.to_string()))?;
+        let user_info: UserInfo = user_info_response
+            .json()
+            .await
+            .map_err(|e| Error::JSONUnmarshallError(e.to_string()))?;
 
         let token = Token::new(
-            token_type, 
+            token_type,
             access_token.to_string(),
-            refresh_token, 
+            refresh_token,
             expires_at,
-            Some(scopes)
+            Some(scopes),
         );
 
         Ok((user_info, token))
     }
 }
-

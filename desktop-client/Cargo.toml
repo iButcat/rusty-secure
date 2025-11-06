@@ -6,5 +6,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+chrono = { version = "0.4.40", features = ["serde"] }
 google-oauth = "1.11.3"
 iced = "0.13.1"
+reqwest = { version = "0.12.15", features = ["json"] }
+serde = "1.0.228"

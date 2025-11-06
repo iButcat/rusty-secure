@@ -70,10 +70,14 @@ async fn main(spawner: Spawner) {
     
     let led_driver = Led::new(led);
     let led_channel = LED_CHANNEL.init(Channel::new());
-    let _led_sender = led_channel.sender();
+    let led_sender = led_channel.sender();
     let led_receiver = led_channel.receiver();
 
-    // spawner.spawn(led_task(led_driver, led_receiver)).unwrap(); // Temporarily disable
+    spawner.spawn(led_task(led_driver, led_receiver)).unwrap();
+
+    // For testing purpose only.
+    led_sender.send(LedMessage::On).await;
+    Timer::after(Duration::from_secs(2)).await;
 
     // --- Display Task ---
     let i2c_config = I2cConfig::default()
@@ -93,7 +97,13 @@ async fn main(spawner: Spawner) {
     let display_sender = display_channel.sender();
     let display_receiver = display_channel.receiver();
 
+    Timer::after(Duration::from_millis(10000)).await;
+
     spawner.spawn(display_task(lcd, display_receiver)).unwrap();
+
+    let mut hello_world = heapless::String::<64>::new();
+    hello_world.push_str("Hello, World!");
+    display_sender.send(DisplayMessage::Text(hello_world)).await;
 
     // --- Sensor Task ---
     let trigger = Output::new(

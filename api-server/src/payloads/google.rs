@@ -6,18 +6,18 @@ use crate::models::Token;
 pub struct UserInfo {
     pub id: String,
     pub email: String,
-    pub name: String, 
+    pub name: String,
     pub picture: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct AuthResponse {
     pub token: Token,
-    pub user_info: UserInfo
+    pub user_info: UserInfo,
 }
 
 #[derive(Deserialize)]
 pub struct OAuthCallback {
     pub state: String,
-    pub code: String
+    pub code: String,
 }

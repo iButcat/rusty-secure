@@ -98,10 +98,10 @@ async fn main(_spawner: Spawner) {
     }
 
     let camera_controller: SharedCamera = match CameraController::new(
-        pins.gpio32, 
-        pins.gpio0, 
-        pins.gpio5, 
-        pins.gpio18, 
+        pins.gpio32,
+        pins.gpio0,
+        pins.gpio5,
+        pins.gpio18,
         pins.gpio19,
         pins.gpio21, 
         pins.gpio36, 

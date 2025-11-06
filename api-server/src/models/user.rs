@@ -1,6 +1,6 @@
+use bson::Uuid;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use bson::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
@@ -15,20 +15,15 @@ pub struct User {
 }
 
 impl User {
-    pub fn new(
-        google_id: String, 
-        email: String, 
-        name: String, 
-        picture: Option<String>,
-    ) -> Self {
-            Self {
-                id: Uuid::new(),
-                google_id,
-                email,
-                name,
-                picture,
-                created_at: Local::now(),
-                updated_at: None,
-            }
+    pub fn new(google_id: String, email: String, name: String, picture: Option<String>) -> Self {
+        Self {
+            id: Uuid::new(),
+            google_id,
+            email,
+            name,
+            picture,
+            created_at: Local::now(),
+            updated_at: None,
+        }
     }
 }

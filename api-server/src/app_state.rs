@@ -1,11 +1,6 @@
 use std::sync::Arc;
 
-use crate::services::{
-    GoogleAuthService, 
-    PictureService, 
-    StatusService, 
-    UserService
-};
+use crate::services::{GoogleAuthService, PictureService, StatusService, UserService};
 
 pub struct AppState {
     pub status_service: Arc<dyn StatusService>,

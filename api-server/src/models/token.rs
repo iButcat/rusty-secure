@@ -18,9 +18,9 @@ pub struct Token {
 impl Token {
     pub fn new(
         token_type: String,
-        access_token: String, 
+        access_token: String,
         refresh_token: String,
-        expires_at: Option<Duration>, 
+        expires_at: Option<Duration>,
         scopes: Option<Vec<String>>,
     ) -> Self {
         Self {

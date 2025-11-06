@@ -1,9 +1,9 @@
-use core::fmt;
-use std::fmt::Display;
 use actix_web::error::ResponseError;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
+use core::fmt;
 use serde_json::json;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum Error {
@@ -31,7 +31,9 @@ impl Display for Error {
             Error::UuidFormatError(msg) => write!(f, "error trying to format uuid: {}", msg),
             Error::InternalError(msg) => write!(f, "internal server error: {}", msg),
             Error::ParseError(msg) => write!(f, "error trying to parse: {}", msg),
-            Error::JSONUnmarshallError(msg) => write!(f, "error trying to unmarshall json: {}", msg),
+            Error::JSONUnmarshallError(msg) => {
+                write!(f, "error trying to unmarshall json: {}", msg)
+            }
         }
     }
 }
@@ -45,14 +47,13 @@ impl ResponseError for Error {
             Error::UuidFormatError(_) => StatusCode::BAD_REQUEST,
             Error::EmptyError(_) => StatusCode::BAD_REQUEST,
             Error::WithText(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            _ => StatusCode::INTERNAL_SERVER_ERROR
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
-    fn error_response(&self) -> HttpResponse{
+    fn error_response(&self) -> HttpResponse {
         let status_code = self.status_code();
-        HttpResponse::build(status_code)
-        .json(json!({
+        HttpResponse::build(status_code).json(json!({
             "error": self.to_string()
         }))
     }

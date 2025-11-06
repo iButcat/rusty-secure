@@ -1,6 +1,6 @@
+use bson::Uuid;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use bson::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Status {

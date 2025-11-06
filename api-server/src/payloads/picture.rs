@@ -1,6 +1,6 @@
+use bson::Uuid;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use bson::Uuid;
 
 use crate::models::Picture;
 
@@ -10,7 +10,7 @@ pub struct PictureResponse {
     pub name: String,
     pub url: String,
     pub created_at: DateTime<Local>,
-    pub updated_at: Option<DateTime<Local>>
+    pub updated_at: Option<DateTime<Local>>,
 }
 
 impl PictureResponse {
@@ -20,7 +20,7 @@ impl PictureResponse {
             name: picture.name,
             url: picture.url,
             created_at: picture.created_at,
-            updated_at: picture.updated_at
+            updated_at: picture.updated_at,
         }
     }
 }

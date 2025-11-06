@@ -1,10 +1,10 @@
-use mongodb::{bson::doc, Client, Collection};
-use bson::Uuid;
 use async_trait::async_trait;
+use bson::Uuid;
+use mongodb::{bson::doc, Client, Collection};
 
-use super::{StatusRepository, PictureRepository};
-use crate::models::{Picture, Status, User};
+use super::{PictureRepository, StatusRepository};
 use crate::errors::Error;
+use crate::models::{Picture, Status, User};
 use crate::repositories::UserRepository;
 
 const STATUS_COLL: &str = "statuses";
@@ -13,15 +13,12 @@ const USER_COLL: &str = "users";
 
 pub struct MongoRepository {
     client: Client,
-    db_name: String
+    db_name: String,
 }
 
 impl MongoRepository {
     pub fn new(client: Client, db_name: String) -> Self {
-        Self {
-            client,
-            db_name
-        }
+        Self { client, db_name }
     }
 
     fn status_collection(&self) -> Collection<Status> {
@@ -42,7 +39,8 @@ impl StatusRepository for MongoRepository {
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Status>, Error> {
         self.status_collection()
             .find_one(doc! {"_id": id})
-            .await.map_err(|e| Error::DatabaseError(e.to_string()))
+            .await
+            .map_err(|e| Error::DatabaseError(e.to_string()))
     }
 
     async fn insert(&self, status: &Status) -> Result<(), Error> {
@@ -53,7 +51,11 @@ impl StatusRepository for MongoRepository {
             .map_err(|e| Error::DatabaseError(e.to_string()))
     }
 
-    async fn find_and_update_authorised(&self, id: Uuid, authorised: bool) -> Result<Option<Status>, Error> {
+    async fn find_and_update_authorised(
+        &self,
+        id: Uuid,
+        authorised: bool,
+    ) -> Result<Option<Status>, Error> {
         self.status_collection()
             .find_one_and_update(doc! {"_id": id}, doc! {"$set": {"authorised": authorised}})
             .await

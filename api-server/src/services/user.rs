@@ -1,31 +1,25 @@
-use std::sync::Arc;
 use async_trait::async_trait;
+use std::sync::Arc;
 
 use super::UserService;
-use crate::repositories::UserRepository;
-use crate::models::User;
 use crate::errors::Error;
+use crate::models::User;
+use crate::repositories::UserRepository;
 
 pub struct UserServiceImpl {
-    user_repo: Arc<dyn UserRepository>
+    user_repo: Arc<dyn UserRepository>,
 }
 
 impl UserServiceImpl {
-    pub fn new(
-        user_repo: Arc<dyn UserRepository>
-    ) -> Self {
-        Self {
-            user_repo
-        }
+    pub fn new(user_repo: Arc<dyn UserRepository>) -> Self {
+        Self { user_repo }
     }
 }
 
 #[async_trait]
 impl UserService for UserServiceImpl {
     async fn get_by_google_id(&self, google_id: String) -> Result<Option<User>, Error> {
-        let user = self.user_repo
-            .get_by_google_id(google_id)
-            .await?;
+        let user = self.user_repo.get_by_google_id(google_id).await?;
 
         Ok(user)
     }

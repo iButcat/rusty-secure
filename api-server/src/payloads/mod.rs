@@ -1,10 +1,10 @@
 mod picture;
 
 mod status;
-pub use status::{StatusResponse, AuthorisedPatchRequest};
+pub use status::{AuthorisedPatchRequest, StatusResponse};
 
-mod user; 
+mod user;
 pub use user::UserResponse;
 
 mod google;
-pub use google::{UserInfo, AuthResponse, OAuthCallback};
+pub use google::{AuthResponse, OAuthCallback, UserInfo};

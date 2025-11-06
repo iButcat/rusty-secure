@@ -8,4 +8,4 @@ mod user_handler;
 pub use user_handler::get_by_google_id;
 
 mod auth_handler;
-pub use auth_handler::{callback, auth_url};
+pub use auth_handler::{auth_url, callback};

@@ -7,5 +7,5 @@ pub use status::Status;
 mod user;
 pub use user::User;
 
-mod token; 
+mod token;
 pub use token::Token;

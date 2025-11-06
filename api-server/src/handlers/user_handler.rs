@@ -8,7 +8,7 @@ use crate::payloads::UserResponse;
 #[get("/api/user/{id}")]
 pub async fn get_by_google_id(
     path: web::Path<String>,
-    data: web::Data<AppState>
+    data: web::Data<AppState>,
 ) -> Result<impl Responder, Error> {
     let google_id: String = path.into_inner();
     let user = data
