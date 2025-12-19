@@ -40,7 +40,7 @@ impl StatusRepository for MongoRepository {
         self.status_collection()
             .find_one(doc! {"_id": id})
             .await
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 
     async fn insert(&self, status: &Status) -> Result<(), Error> {
@@ -48,7 +48,7 @@ impl StatusRepository for MongoRepository {
             .insert_one(status)
             .await
             .map(|_| ())
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 
     async fn find_and_update_authorised(
@@ -59,7 +59,7 @@ impl StatusRepository for MongoRepository {
         self.status_collection()
             .find_one_and_update(doc! {"_id": id}, doc! {"$set": {"authorised": authorised}})
             .await
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 }
 
@@ -69,7 +69,7 @@ impl PictureRepository for MongoRepository {
         self.picture_collection()
             .find_one(doc! {"_id": id})
             .await
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 
     async fn insert(&self, picture: &Picture) -> Result<(), Error> {
@@ -77,7 +77,7 @@ impl PictureRepository for MongoRepository {
             .insert_one(picture)
             .await
             .map(|_| ())
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 }
 
@@ -88,13 +88,13 @@ impl UserRepository for MongoRepository {
             .insert_one(user)
             .await
             .map(|_| ())
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 
     async fn get_by_google_id(&self, google_id: String) -> Result<Option<User>, Error> {
         self.user_collection()
             .find_one(doc! {"google_id": google_id})
             .await
-            .map_err(|e| Error::DatabaseError(e.to_string()))
+            .map_err(|e| Error::Database(e.to_string()))
     }
 }

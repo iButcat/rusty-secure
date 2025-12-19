@@ -1,11 +1,11 @@
-use log::info;
 use esp_idf_sys::EspError;
+use log::info;
 use std::vec::Vec;
 
 use crate::esp_cam::Camera;
 
 pub struct CameraController<'a> {
-    camera: Camera<'a>
+    camera: Camera<'a>,
 }
 
 impl<'a> CameraController<'a> {
@@ -31,21 +31,43 @@ impl<'a> CameraController<'a> {
     /// 16. `pixel_format`: e.g. `camera::pixformat_t::PIXFORMAT_JPEG`
     /// 17. `frame_size`: e.g. `camera::framesize_t::FRAMESIZE_UXGA`
     pub fn new(
-        pin_pwdn: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_xclk: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_d0: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_d1: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_d2: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_d3: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
+        pin_pwdn: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_xclk: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_d0: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_d1: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_d2: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_d3: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
         pin_d4: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin> + 'a,
         pin_d5: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin> + 'a,
         pin_d6: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin> + 'a,
         pin_d7: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin> + 'a,
-        pin_vsync: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_href: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_pclk: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_sda: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
-        pin_scl: impl esp_idf_hal::peripheral::Peripheral<P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin> + 'a,
+        pin_vsync: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_href: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_pclk: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_sda: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
+        pin_scl: impl esp_idf_hal::peripheral::Peripheral<
+                P = impl esp_idf_hal::gpio::InputPin + esp_idf_hal::gpio::OutputPin,
+            > + 'a,
         pixel_format: esp_idf_sys::camera::pixformat_t,
         frame_size: esp_idf_sys::camera::framesize_t,
     ) -> Result<Self, EspError> {

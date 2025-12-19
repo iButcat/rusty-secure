@@ -1,5 +1,5 @@
-pub mod server;
 pub mod client;
+pub mod server;
 
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
@@ -7,10 +7,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PictureResponse {
     id: String,
-    name: String, 
+    name: String,
     url: String,
     created_at: DateTime<Local>,
-    updated_at: Option<DateTime<Local>>
+    updated_at: Option<DateTime<Local>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -19,5 +19,5 @@ pub struct StatusResponse {
     picture: PictureResponse,
     authorised: bool,
     created_at: DateTime<Local>,
-    updated_at: Option<DateTime<Local>>
+    updated_at: Option<DateTime<Local>>,
 }

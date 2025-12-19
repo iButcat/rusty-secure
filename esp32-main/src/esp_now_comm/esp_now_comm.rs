@@ -1,9 +1,9 @@
-use esp_wifi::esp_now::EspNow;
-use embassy_time::{Duration, Timer};
-use embassy_sync::channel::Receiver;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::Receiver;
+use embassy_time::{Duration, Timer};
+use esp_wifi::esp_now::EspNow;
 use heapless::Vec;
-use log::{info, error};
+use log::{error, info};
 
 use crate::esp_now_comm::EspNowCommMessage;
 
@@ -22,25 +22,23 @@ impl<'a> EspNowComm<'a> {
         Ok(Self {
             esp_now,
             peer_mac,
-            receiver
+            receiver,
         })
     }
 
     pub async fn send_capture_command(&mut self) -> Result<(), ()> {
         info!("Sending capture command to camera");
         match self.esp_now.send(&self.peer_mac, b"capture") {
-            Ok(waiter) => {
-                match waiter.wait() {
-                    Ok(_) => {
-                        info!("Capture command sent to camera");
-                        Ok(())
-                    }
-                    Err(_) => {
-                        info!("Failed to send capture command");
-                        Err(())
-                    }
+            Ok(waiter) => match waiter.wait() {
+                Ok(_) => {
+                    info!("Capture command sent to camera");
+                    Ok(())
                 }
-            }
+                Err(_) => {
+                    info!("Failed to send capture command");
+                    Err(())
+                }
+            },
             Err(_) => {
                 error!("Failed to send capture command");
                 Err(())

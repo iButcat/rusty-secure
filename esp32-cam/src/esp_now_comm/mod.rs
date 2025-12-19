@@ -1,7 +1,4 @@
-use embassy_sync::{
-    blocking_mutex::raw::CriticalSectionRawMutex, 
-    channel::Channel
-};
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, channel::Channel};
 use std::vec::Vec;
 
 mod esp_now_comm;
@@ -31,13 +28,18 @@ use log::info;
 
 pub fn setup_esp_now_receiver_callback(esp_now: &EspNow<'static>) -> Result<(), EspError> {
     esp_now.register_recv_cb(|receiver_info, data| {
-        info!("Received data from {:?} with length {}", receiver_info.src_addr, data.len());
+        info!(
+            "Received data from {:?} with length {}",
+            receiver_info.src_addr,
+            data.len()
+        );
         let mut buffer: Vec<u8> = Vec::with_capacity(data.len());
         buffer.extend_from_slice(data);
 
         if data == b"capture" {
-            if let Err(err) = ESP_NOW_CHANNEL
-                .try_send(EspNowCommMessage::new_receive_capture_command()) {
+            if let Err(err) =
+                ESP_NOW_CHANNEL.try_send(EspNowCommMessage::new_receive_capture_command())
+            {
                 info!("Failed to send receive capture command: {:?}", err);
             }
         } else {

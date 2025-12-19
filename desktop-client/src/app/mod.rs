@@ -1,14 +1,14 @@
-pub mod state;
-pub mod message;
 pub mod config;
+pub mod message;
+pub mod state;
 
-use state::AppState;
 use message::Message;
+use state::AppState;
 
 use crate::app::state::Page;
 
-use iced::widget::{button, column, container, text, text_input};
 use iced::Element;
+use iced::widget::{button, column, container, text, text_input};
 
 pub fn run() -> iced::Result {
     iced::run("Rusty Secure Client", update, view)
@@ -47,7 +47,10 @@ fn update(state: &mut AppState, message: Message) {
         }
         Message::Login(username, password) => {
             println!("Login attempt: {} / {}", username, password);
-            println!("Got stored username: {}, and password: {}", state.username, state.password);
+            println!(
+                "Got stored username: {}, and password: {}",
+                state.username, state.password
+            );
         }
         Message::Logout => {
             println!("Logout");
@@ -55,12 +58,10 @@ fn update(state: &mut AppState, message: Message) {
         Message::FetchData => {
             println!("Fetching data...");
         }
-        Message::DataLoaded(result) => {
-            match result {
-                Ok(data) => println!("Data loaded: {:?}", data),
-                Err(e) => println!("Error loading data: {}", e),
-            }
-        }
+        Message::DataLoaded(result) => match result {
+            Ok(data) => println!("Data loaded: {:?}", data),
+            Err(e) => println!("Error loading data: {}", e),
+        },
     }
 }
 

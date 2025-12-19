@@ -1,16 +1,16 @@
-use std::sync::Arc;
-use embassy_sync::mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
+use embassy_sync::mutex::Mutex;
 use embassy_time::{Duration, Timer};
 use log::info;
+use std::sync::Arc;
 
-use crate::esp_now_comm::EspNowComm;
 use crate::cam::camera_controller::CameraController;
+use crate::esp_now_comm::EspNowComm;
 
 #[embassy_executor::task]
 pub async fn handle_esp_now_task(
     mut comm: EspNowComm<'static>,
-    camera: Arc<Mutex<NoopRawMutex, CameraController<'static>>>
+    camera: Arc<Mutex<NoopRawMutex, CameraController<'static>>>,
 ) {
     loop {
         if comm.receive_capture_command().await.is_ok() {

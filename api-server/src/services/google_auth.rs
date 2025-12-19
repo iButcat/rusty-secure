@@ -45,11 +45,10 @@ impl GoogleAuthServiceImpl {
 #[async_trait]
 impl GoogleAuthService for GoogleAuthServiceImpl {
     async fn get_authorisation_url(&self) -> Result<(String, String), Error> {
-        let auth_url =
-            AuthUrl::new(self.auth_url.clone()).map_err(|e| Error::ParseError(e.to_string()));
+        let auth_url = AuthUrl::new(self.auth_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
         let token_url =
-            TokenUrl::new(self.token_url.clone()).map_err(|e| Error::ParseError(e.to_string()));
+            TokenUrl::new(self.token_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
         let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))
@@ -82,12 +81,12 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
     ) -> Result<(UserInfo, Token), Error> {
         let auth_url = AuthUrl::new(self.auth_url.clone());
         let token_url =
-            TokenUrl::new(self.token_url.clone()).map_err(|e| Error::ParseError(e.to_string()));
+            TokenUrl::new(self.token_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
         let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))
-            .set_auth_uri(auth_url.map_err(|e| Error::ParseError(e.to_string()))?)
-            .set_token_uri(token_url.map_err(|e| Error::ParseError(e.to_string()))?)
+            .set_auth_uri(auth_url.map_err(|e| Error::Parse(e.to_string()))?)
+            .set_token_uri(token_url.map_err(|e| Error::Parse(e.to_string()))?)
             .set_redirect_uri(
                 RedirectUrl::new(self.redirect_url.clone()).expect("Invalid redirect URL"),
             );
@@ -98,7 +97,7 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
             .exchange_code(AuthorizationCode::new(code))
             .request_async(&http_client)
             .await
-            .map_err(|e| Error::InternalError(e.to_string()))?;
+            .map_err(|e| Error::Internal(e.to_string()))?;
 
         let access_token = token_response.access_token().secret();
         let refresh_token = token_response
@@ -124,12 +123,12 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
             .bearer_auth(access_token)
             .send()
             .await
-            .map_err(|e| Error::InternalError(e.to_string()))?;
+            .map_err(|e| Error::Internal(e.to_string()))?;
 
         let user_info: UserInfo = user_info_response
             .json()
             .await
-            .map_err(|e| Error::JSONUnmarshallError(e.to_string()))?;
+            .map_err(|e| Error::JSONUnmarshall(e.to_string()))?;
 
         let token = Token::new(
             token_type,

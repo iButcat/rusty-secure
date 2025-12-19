@@ -1,5 +1,3 @@
-
-
 #[derive(Debug, Clone)]
 pub enum Page {
     Home,
@@ -21,7 +19,7 @@ impl Default for AppState {
     fn default() -> Self {
         Self {
             current_page: Page::Login,
-            loading: false, 
+            loading: false,
             error_message: None,
             username: String::new(),
             password: String::new(),
@@ -40,6 +38,6 @@ impl AppState {
     }
 
     pub fn set_error(&mut self, error: Option<String>) {
-        self.error_message = error; 
+        self.error_message = error;
     }
 }

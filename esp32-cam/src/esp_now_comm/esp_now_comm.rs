@@ -1,10 +1,10 @@
-use embassy_time::{Duration, Timer};
-use embassy_sync::channel::Receiver;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::Receiver;
+use embassy_time::{Duration, Timer};
 use esp_idf_svc::espnow::EspNow;
 use esp_idf_sys::EspError;
-use std::vec::Vec;
 use log::info;
+use std::vec::Vec;
 
 use crate::esp_now_comm::EspNowCommMessage;
 
@@ -23,7 +23,7 @@ impl<'a> EspNowComm<'a> {
         Self {
             esp_now,
             peer_mac,
-            receiver
+            receiver,
         }
     }
 
@@ -43,7 +43,7 @@ impl<'a> EspNowComm<'a> {
     pub async fn send_image_chunked(&mut self, image: Vec<u8>) -> Result<(), EspError> {
         info!("Sending image");
         info!("Image length: {}", image.len());
-        
+
         let chunk_size = 200;
         let total_chunks = image.len() / chunk_size;
         info!("Total chunks to send: {}", total_chunks);

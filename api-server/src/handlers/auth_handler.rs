@@ -19,13 +19,13 @@ pub async fn callback(
         .goolge_auth_service
         .exchange_code_for_token(code, state)
         .await
-        .map_err(|e| Error::InternalError(e.to_string()))?;
+        .map_err(|e| Error::Internal(e.to_string()))?;
 
     let existing_user = data
         .user_service
         .get_by_google_id(user_info.id.clone())
         .await
-        .map_err(|e| Error::InternalError(e.to_string()))?;
+        .map_err(|e| Error::Internal(e.to_string()))?;
 
     let _user = match existing_user {
         Some(user) => user,
@@ -39,7 +39,7 @@ pub async fn callback(
             data.user_service
                 .register(user_model.clone())
                 .await
-                .map_err(|e| Error::InternalError(e.to_string()))?;
+                .map_err(|e| Error::Internal(e.to_string()))?;
             user_model
         }
     };
@@ -56,7 +56,7 @@ pub async fn auth_url(data: web::Data<AppState>) -> Result<impl Responder, Error
         .goolge_auth_service
         .get_authorisation_url()
         .await
-        .map_err(|e| Error::InternalError(e.to_string()))?;
+        .map_err(|e| Error::Internal(e.to_string()))?;
 
     Ok(HttpResponse::Ok().json(auth_url))
 }

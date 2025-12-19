@@ -1,13 +1,13 @@
 use crate::esp_now_comm::{EspNowComm, EspNowCommMessage};
-use embassy_sync::channel::Receiver;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::Receiver;
 use embassy_time::{Duration, Timer};
-use log::{info, error};
+use log::{error, info};
 
 #[embassy_executor::task]
 pub async fn handle_esp_now_task(
-    mut comm: EspNowComm<'static>, 
-    receiver: Receiver<'static, CriticalSectionRawMutex, EspNowCommMessage, 2>
+    mut comm: EspNowComm<'static>,
+    receiver: Receiver<'static, CriticalSectionRawMutex, EspNowCommMessage, 2>,
 ) {
     loop {
         if let Ok(message) = receiver.try_receive() {
@@ -18,7 +18,7 @@ pub async fn handle_esp_now_task(
                         error!("Failed to send capture command");
                     }
                 }
-                // Other type of message, see later if I need it. 
+                // Other type of message, see later if I need it.
                 _ => {}
             }
         }

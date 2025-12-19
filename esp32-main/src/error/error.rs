@@ -1,7 +1,7 @@
 use core::error::Error as CoreError;
 use core::fmt::{self, Write};
-use heapless::String;
 use esp_hal::i2c::master::Error as I2cError;
+use heapless::String;
 
 #[derive(Debug)]
 pub enum Error {

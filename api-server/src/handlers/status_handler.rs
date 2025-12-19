@@ -13,18 +13,13 @@ pub async fn get_status(
 ) -> Result<impl Responder, Error> {
     let status_id = path.into_inner();
     let status_uuid = Uuid::parse_str(&status_id)
-        .map_err(|_| Error::UuidFormatError("Invalid status ID format".to_string()))?;
+        .map_err(|_| Error::UuidFormat("Invalid status ID format".to_string()))?;
 
     let status_response = data
         .status_service
         .get_status_details(status_uuid)
         .await
-        .map_err(|_| {
-            Error::NotFound(format!(
-                "Status not found for ID: {}",
-                status_uuid.to_string()
-            ))
-        })?;
+        .map_err(|_| Error::NotFound(format!("Status not found for ID: {}", status_uuid)))?;
 
     Ok(HttpResponse::Ok().json(status_response))
 }
@@ -38,7 +33,7 @@ pub async fn patch_authorised(
 ) -> Result<impl Responder, Error> {
     let status_id = path.into_inner();
     let status_uuid = Uuid::parse_str(&status_id)
-        .map_err(|_| Error::UuidFormatError("Invalid status ID format".to_string()))?;
+        .map_err(|_| Error::UuidFormat("Invalid status ID format".to_string()))?;
 
     let authorised = body.authorised;
 
@@ -47,7 +42,7 @@ pub async fn patch_authorised(
         .update_authorisation(status_uuid, authorised)
         .await
         .map_err(|_| {
-            Error::InternalError(
+            Error::Internal(
                 "Something went wrong trying to update status authorisation".to_string(),
             )
         })?;

@@ -2,25 +2,25 @@ use std::sync::Arc;
 use std::sync::Mutex as StdMutex;
 
 use embassy_executor::Spawner;
-use embassy_sync::blocking_mutex::Mutex as BlockingMutex;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::blocking_mutex::Mutex as BlockingMutex;
 use embassy_time::{Duration, Timer};
+use esp_idf_hal::gpio::{Gpio4, Output, PinDriver};
+use esp_idf_hal::peripherals::Peripherals;
 use esp_idf_svc::eventloop::EspSystemEventLoop;
 use esp_idf_svc::nvs::EspNvsPartition;
 use esp_idf_svc::wifi::{ClientConfiguration, Configuration as WifiConfiguration, EspWifi};
-use esp_idf_hal::gpio::{PinDriver, Gpio4, Output};
-use esp_idf_hal::peripherals::Peripherals;
-use log::{info, error};
+use log::{error, info};
 
 /*
  * TODO: remove refacto from the name. We switch from the module which was using no_std however
- * the cam module isn't easy to setup so we are using idf services instead. I might write 
+ * the cam module isn't easy to setup so we are using idf services instead. I might write
  * crate to be able to use the cam from esp-32 board with OV2640 sensor in no_std environment.
  * Also need reorganise the main code since we are simply testing now and check format of the code.
  */
 use esp32_cam::cam::camera_controller::CameraController;
-use esp32_cam::http::server::CameraHttpServer;
 use esp32_cam::config::Config;
+use esp32_cam::http::server::CameraHttpServer;
 
 use heapless::String;
 
@@ -36,7 +36,13 @@ async fn main(_spawner: Spawner) {
     let peripherals = Peripherals::take().expect("Failed to take peripherals");
     let pins = peripherals.pins;
 
-    let flash_led_driver = match PinDriver::output(pins.gpio4) { Ok(d) => d, Err(e) => { error!("Flash ERR: {}", e); return; } };
+    let flash_led_driver = match PinDriver::output(pins.gpio4) {
+        Ok(d) => d,
+        Err(e) => {
+            error!("Flash ERR: {}", e);
+            return;
+        }
+    };
     let flash_led: SharedFlashPin = Arc::new(StdMutex::new(flash_led_driver));
     {
         match flash_led.lock() {
@@ -54,9 +60,7 @@ async fn main(_spawner: Spawner) {
     info!("Flashlight LED (GPIO4) configured.");
 
     let sys_loop = EspSystemEventLoop::take().expect("Failed to take sys loop");
-    let default_nvs = EspNvsPartition::take_with(false)
-        .expect("Failed to create default nvs");
-    
+    let default_nvs = EspNvsPartition::take_with(false).expect("Failed to create default nvs");
 
     let mut wifi = EspWifi::new(peripherals.modem, sys_loop, Some(default_nvs))
         .expect("Failed to create wifi");
@@ -73,11 +77,15 @@ async fn main(_spawner: Spawner) {
     wifi.set_configuration(&wifi_configuration)
         .expect("Failed to set wifi configuration");
 
-    wifi.start().expect("Failed to start wifi");
-    info!("Wifi started");
+    if let Err(e) = wifi.start() {
+        error!("Failed to start wifi: {:?}", e);
+        return;
+    }
 
-    wifi.connect().expect("Failed to connect to wifi");
-    info!("Wifi connected");
+    if let Err(e) = wifi.connect() {
+        error!("Failed to connect wifi: {:?}", e);
+        return;
+    }
 
     let mut ip_info = None;
     for _ in 0..20 {
@@ -103,34 +111,46 @@ async fn main(_spawner: Spawner) {
         pins.gpio5,
         pins.gpio18,
         pins.gpio19,
-        pins.gpio21, 
-        pins.gpio36, 
-        pins.gpio39, 
-        pins.gpio34, 
-        pins.gpio35, 
-        pins.gpio25, 
-        pins.gpio23, 
-        pins.gpio22, 
-        pins.gpio26, 
-        pins.gpio27, 
+        pins.gpio21,
+        pins.gpio36,
+        pins.gpio39,
+        pins.gpio34,
+        pins.gpio35,
+        pins.gpio25,
+        pins.gpio23,
+        pins.gpio22,
+        pins.gpio26,
+        pins.gpio27,
         esp_idf_sys::camera::pixformat_t_PIXFORMAT_JPEG,
         esp_idf_sys::camera::framesize_t_FRAMESIZE_XGA,
     ) {
         Ok(cam) => Arc::new(BlockingMutex::new(cam)),
         Err(e) => {
             log::error!("Failed to initialize camera: {:?}", e);
-            loop { embassy_time::Timer::after(embassy_time::Duration::from_secs(60)).await; }
+            loop {
+                embassy_time::Timer::after(embassy_time::Duration::from_secs(60)).await;
+            }
         }
     };
     info!("Camera controller initialized.");
 
     camera_controller.lock(|controller_guard| {
         let sensor = controller_guard.sensor();
-        if let Err(e) = sensor.set_brightness(1) { error!("Set Brightness ERR: {}", e); }
-        if let Err(e) = sensor.set_contrast(1) { error!("Set Contrast ERR: {}", e); }
-        if let Err(e) = sensor.set_saturation(0) { error!("Set Saturation ERR: {}", e); }
-        if let Err(e) = sensor.set_quality(10) { error!("Set Quality ERR: {}", e); }
-        if let Err(e) = sensor.set_whitebal(true) { error!("Set Whitebal ERR: {}", e); }
+        if let Err(e) = sensor.set_brightness(1) {
+            error!("Set Brightness ERR: {}", e);
+        }
+        if let Err(e) = sensor.set_contrast(1) {
+            error!("Set Contrast ERR: {}", e);
+        }
+        if let Err(e) = sensor.set_saturation(0) {
+            error!("Set Saturation ERR: {}", e);
+        }
+        if let Err(e) = sensor.set_quality(10) {
+            error!("Set Quality ERR: {}", e);
+        }
+        if let Err(e) = sensor.set_whitebal(true) {
+            error!("Set Whitebal ERR: {}", e);
+        }
     });
     info!("Sensor configured.");
 
@@ -141,7 +161,9 @@ async fn main(_spawner: Spawner) {
         Ok(server) => server,
         Err(e) => {
             log::error!("Failed to create HTTP server: {:?}", e);
-            loop { embassy_time::Timer::after(embassy_time::Duration::from_secs(60)).await; }
+            loop {
+                embassy_time::Timer::after(embassy_time::Duration::from_secs(60)).await;
+            }
         }
     };
 
@@ -152,4 +174,3 @@ async fn main(_spawner: Spawner) {
         embassy_time::Timer::after(embassy_time::Duration::from_secs(60)).await;
     }
 }
-
