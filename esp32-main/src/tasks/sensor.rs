@@ -1,11 +1,11 @@
-use embassy_sync::channel::{Receiver, Sender};
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::{Receiver, Sender};
 use embassy_time::{Duration, Timer};
 use heapless::String;
 use log::{error, info};
 
-use crate::sensor::{UltrasonicSensor, SensorMessage};
 use crate::display::DisplayMessage;
+use crate::sensor::{SensorMessage, UltrasonicSensor};
 
 const DISTANCE_THRESHOLD_CM: u32 = 20;
 
@@ -13,7 +13,7 @@ const DISTANCE_THRESHOLD_CM: u32 = 20;
 pub async fn sensor_task(
     mut sensor: UltrasonicSensor,
     receiver: Receiver<'static, CriticalSectionRawMutex, SensorMessage, 1>,
-    display_sender: Sender<'static, CriticalSectionRawMutex, DisplayMessage, 2>
+    display_sender: Sender<'static, CriticalSectionRawMutex, DisplayMessage, 2>,
 ) {
     let mut last_status = true;
     let mut measuring = false;
@@ -25,7 +25,6 @@ pub async fn sensor_task(
     measuring = true;
 
     loop {
-        
         if let Ok(message) = receiver.try_receive() {
             match message {
                 SensorMessage::StartMeasurement => {
@@ -43,7 +42,7 @@ pub async fn sensor_task(
             match sensor.measure_distance().await {
                 Ok(distance) => {
                     let current_status = distance >= DISTANCE_THRESHOLD_CM;
-    
+
                     if current_status != last_status {
                         let mut text: String<64> = String::new();
                         if !current_status {

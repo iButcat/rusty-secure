@@ -7,7 +7,7 @@ pub use lcd::LcdDisplay;
 pub enum DisplayMessage {
     Text(String<64>),
     Clear,
-    AuthStatus(bool)
+    AuthStatus(bool),
 }
 
 impl DisplayMessage {

@@ -3,9 +3,9 @@ pub use led::*;
 
 #[derive(Clone)]
 pub enum LedMessage {
-    On, 
-    Off, 
-    Toggle
+    On,
+    Off,
+    Toggle,
 }
 
 impl LedMessage {

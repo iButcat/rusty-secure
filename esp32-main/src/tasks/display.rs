@@ -1,17 +1,17 @@
-use embassy_sync::channel::Receiver;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::Receiver;
 use heapless::String;
 
-use crate::display::{LcdDisplay, DisplayMessage};
+use crate::display::{DisplayMessage, LcdDisplay};
 
 #[embassy_executor::task]
 pub async fn display_task(
     mut lcd: LcdDisplay,
-    receiver: Receiver<'static, CriticalSectionRawMutex, DisplayMessage, 2>
-) {    
+    receiver: Receiver<'static, CriticalSectionRawMutex, DisplayMessage, 2>,
+) {
     match lcd.init().await {
         Ok(_) => log::info!("LCD initialized successfully"),
-        Err(e) => log::error!("LCD initialization failed: {:?}", e)
+        Err(e) => log::error!("LCD initialization failed: {:?}", e),
     }
 
     loop {

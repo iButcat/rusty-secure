@@ -1,7 +1,7 @@
 use esp_hal::gpio::Output;
 
 pub struct Led {
-    pin: Output<'static>
+    pin: Output<'static>,
 }
 
 impl Led {

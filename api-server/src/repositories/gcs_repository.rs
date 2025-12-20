@@ -47,7 +47,7 @@ impl StorageRepository for GcsRepository {
                 &UploadType::Simple(media),
             )
             .await
-            .map_err(|e| Error::StorageError(e.to_string()))?;
+            .map_err(|e| Error::Storage(e.to_string()))?;
 
         // NOTE: remove logs and keep only for errors
         println!("Successfully uploaded to GSC: {}", object.name);

@@ -39,7 +39,7 @@ impl PictureService for PictureServiceImpl {
         if !image_data.is_empty() {
             let timestamp = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
-                .map_err(|e| Error::ServiceError(format!("System time error: {}", e)))?
+                .map_err(|e| Error::Service(format!("System time error: {}", e)))?
                 .as_secs();
 
             let object_name = format!("esp32_cam_{}.jpg", timestamp);
@@ -59,7 +59,7 @@ impl PictureService for PictureServiceImpl {
 
             Ok(status_response)
         } else {
-            Err(Error::EmptyError("Image data is empty".to_string()))
+            Err(Error::Empty("Image data is empty".to_string()))
         }
     }
 }

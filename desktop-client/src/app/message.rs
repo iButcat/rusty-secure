@@ -11,8 +11,8 @@ pub enum Message {
     Login(String, String),
     Logout,
 
-    FetchData, 
-    DataLoaded(Result<Vec<String>, String>), 
+    FetchData,
+    DataLoaded(Result<Vec<String>, String>),
 
     ButtonPressed,
     TextChanged(String),

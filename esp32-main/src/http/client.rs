@@ -1,13 +1,9 @@
 extern crate alloc;
 
-use log::{info, error};
-use reqwless::{
-    client::HttpClient as ReqwlessHttpClient,
-    request::Method,
-    response::StatusCode,
-};
-use embedded_nal_async::{TcpConnect, Dns};
 use crate::http::CamStatusResponse;
+use embedded_nal_async::{Dns, TcpConnect};
+use log::{error, info};
+use reqwless::{client::HttpClient as ReqwlessHttpClient, request::Method, response::StatusCode};
 use serde_json_core::from_slice;
 
 #[derive(Debug, Clone)]
@@ -34,15 +30,12 @@ impl<'a, T: TcpConnect, D: Dns> HttpClient<'a, T, D> {
 
     pub async fn request_camera_capture(&mut self) -> Result<CamStatusResponse, ClientError> {
         info!("Requesting camera capture");
-        let url = self.cam_capture_url; 
+        let url = self.cam_capture_url;
 
-        let mut request = self.client
-            .request(Method::GET, &url)
-            .await
-            .map_err(|e| {
-                error!("Failed to create request: {:?}", e);
-                ClientError::RequestCreationFailed
-            })?;
+        let mut request = self.client.request(Method::GET, &url).await.map_err(|e| {
+            error!("Failed to create request: {:?}", e);
+            ClientError::RequestCreationFailed
+        })?;
 
         let mut rx_buf = [0u8; 1024];
         info!("Sending request...");
@@ -62,7 +55,7 @@ impl<'a, T: TcpConnect, D: Dns> HttpClient<'a, T, D> {
             Ok(data) => {
                 info!("Response body read successfully ({} bytes)", data.len());
                 data
-            },
+            }
             Err(e) => {
                 error!("Failed to read response body: {:?}", e);
                 return Err(ClientError::BodyReadFailed);
@@ -73,7 +66,7 @@ impl<'a, T: TcpConnect, D: Dns> HttpClient<'a, T, D> {
         if let Ok(body_str) = core::str::from_utf8(body) {
             info!("Response body: {}", body_str);
         }
-        
+
         match from_slice::<CamStatusResponse>(body) {
             Ok((auth_response, _)) => {
                 info!("Received auth response: {:?}", auth_response);

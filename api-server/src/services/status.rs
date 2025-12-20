@@ -106,13 +106,13 @@ impl StatusService for StatusServiceImpl {
                     let status = response.status();
                     let error_msg = format!("HTTP Server responded with error status: {}", status);
                     println!("{}", error_msg);
-                    Err(Error::ServiceError(error_msg))
+                    Err(Error::Service(error_msg))
                 }
             }
             Err(err) => {
                 let error_msg = format!("Failed to send status to HTTP Server: {}", err);
                 println!("{}", error_msg);
-                Err(Error::ServiceError(error_msg))
+                Err(Error::Service(error_msg))
             }
         }
     }

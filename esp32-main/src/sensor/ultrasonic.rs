@@ -1,12 +1,12 @@
-use esp_hal::gpio::{Output, Input};
 use embassy_time::{Duration, Timer};
+use esp_hal::gpio::{Input, Output};
 use log::info;
 
 use crate::error::Error;
 
 pub struct UltrasonicSensor {
     trigger: Output<'static>,
-    echo: Input<'static>
+    echo: Input<'static>,
 }
 
 impl UltrasonicSensor {
@@ -38,7 +38,7 @@ impl UltrasonicSensor {
         let pulse_duration = pulse_start.elapsed();
 
         let distance_cm = (pulse_duration.as_micros() as u32 * 343) / 20000;
-        
+
         Ok(distance_cm)
     }
 }

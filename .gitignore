@@ -16,3 +16,4 @@ Cargo.lock
 # security
 service-accounts.json
 .env
+.zed/

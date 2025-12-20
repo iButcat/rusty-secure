@@ -23,10 +23,10 @@ impl LcdDisplay {
 
         self.write_4bits(0x30).await?;
         Timer::after(Duration::from_millis(10)).await;
-        
+
         self.write_4bits(0x30).await?;
         Timer::after(Duration::from_micros(150)).await;
-        
+
         self.write_4bits(0x30).await?;
         self.write_4bits(0x20).await?;
 
@@ -41,16 +41,20 @@ impl LcdDisplay {
 
     async fn write_4bits(&mut self, value: u8) -> Result<(), ()> {
         let data = value | LCD_BACKLIGHT;
-        
+
         match self.i2c.write(LCD_ADDRESS, &[data]) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 info!("I2C write failed: {:?}", e);
                 return Err(());
             }
         }
-        self.i2c.write(LCD_ADDRESS, &[data | LCD_ENABLE]).map_err(|_| ())?;
-        self.i2c.write(LCD_ADDRESS, &[data & !LCD_ENABLE]).map_err(|_| ())?;
+        self.i2c
+            .write(LCD_ADDRESS, &[data | LCD_ENABLE])
+            .map_err(|_| ())?;
+        self.i2c
+            .write(LCD_ADDRESS, &[data & !LCD_ENABLE])
+            .map_err(|_| ())?;
         Timer::after(Duration::from_micros(1)).await;
         Ok(())
     }

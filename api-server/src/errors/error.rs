@@ -8,30 +8,30 @@ use std::fmt::Display;
 #[derive(Debug)]
 pub enum Error {
     WithText(String),
-    DatabaseError(String),
-    StorageError(String),
-    ServiceError(String),
+    Database(String),
+    Storage(String),
+    Service(String),
     NotFound(String),
-    EmptyError(String),
-    UuidFormatError(String),
-    InternalError(String),
-    ParseError(String),
-    JSONUnmarshallError(String),
+    Empty(String),
+    UuidFormat(String),
+    Internal(String),
+    Parse(String),
+    JSONUnmarshall(String),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::WithText(msg) => write!(f, "{}", msg),
-            Error::DatabaseError(msg) => write!(f, "database error: {}", msg),
-            Error::StorageError(msg) => write!(f, "storage error: {}", msg),
-            Error::ServiceError(msg) => write!(f, "service error: {}", msg),
+            Error::Database(msg) => write!(f, "database error: {}", msg),
+            Error::Storage(msg) => write!(f, "storage error: {}", msg),
+            Error::Service(msg) => write!(f, "service error: {}", msg),
             Error::NotFound(msg) => write!(f, "not found: {}", msg),
-            Error::EmptyError(msg) => write!(f, "{}", msg),
-            Error::UuidFormatError(msg) => write!(f, "error trying to format uuid: {}", msg),
-            Error::InternalError(msg) => write!(f, "internal server error: {}", msg),
-            Error::ParseError(msg) => write!(f, "error trying to parse: {}", msg),
-            Error::JSONUnmarshallError(msg) => {
+            Error::Empty(msg) => write!(f, "{}", msg),
+            Error::UuidFormat(msg) => write!(f, "error trying to format uuid: {}", msg),
+            Error::Internal(msg) => write!(f, "internal server error: {}", msg),
+            Error::Parse(msg) => write!(f, "error trying to parse: {}", msg),
+            Error::JSONUnmarshall(msg) => {
                 write!(f, "error trying to unmarshall json: {}", msg)
             }
         }
@@ -44,8 +44,8 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match self {
             Error::NotFound(_) => StatusCode::NOT_FOUND,
-            Error::UuidFormatError(_) => StatusCode::BAD_REQUEST,
-            Error::EmptyError(_) => StatusCode::BAD_REQUEST,
+            Error::UuidFormat(_) => StatusCode::BAD_REQUEST,
+            Error::Empty(_) => StatusCode::BAD_REQUEST,
             Error::WithText(_) => StatusCode::INTERNAL_SERVER_ERROR,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }

@@ -6,9 +6,9 @@ use embassy_net::{IpListenEndpoint, Stack};
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::channel::Sender;
 use embassy_time::{Duration, Timer};
-use embedded_io_async::Write as _;
 use embedded_io_async::Read as _;
-use log::{info, error, warn};
+use embedded_io_async::Write as _;
+use log::{error, info, warn};
 use serde_json_core::from_slice;
 
 use crate::display::DisplayMessage;
@@ -19,7 +19,7 @@ const HTTP_PORT: u16 = 80;
 #[embassy_executor::task]
 pub async fn http_server_task(
     stack: &'static Stack<'static>,
-    display_sender: Sender<'static, CriticalSectionRawMutex, DisplayMessage, 2>
+    display_sender: Sender<'static, CriticalSectionRawMutex, DisplayMessage, 2>,
 ) {
     let mut rx_buffer_socket = [0u8; 1024];
     let mut tx_buffer_socket = [0u8; 1024];
@@ -37,14 +37,13 @@ pub async fn http_server_task(
             continue;
         }
 
-        let mut socket = TcpSocket::new(
-            *stack,
-            &mut rx_buffer_socket,
-            &mut tx_buffer_socket,
-        );
+        let mut socket = TcpSocket::new(*stack, &mut rx_buffer_socket, &mut tx_buffer_socket);
         socket.set_timeout(Some(Duration::from_secs(10)));
 
-        let local_endpoint = IpListenEndpoint {addr: None, port: HTTP_PORT};
+        let local_endpoint = IpListenEndpoint {
+            addr: None,
+            port: HTTP_PORT,
+        };
         info!("HTTP Server: Listening on port {}...", HTTP_PORT);
 
         if let Err(e) = socket.accept(local_endpoint).await {
@@ -60,24 +59,23 @@ pub async fn http_server_task(
         let mut request_buffer = [0u8; 2048];
         let mut read_len = 0;
 
-        let read_result = embassy_time::with_timeout(
-            Duration::from_secs(10),
-            async {
-                match socket.read(&mut request_buffer).await {
-                    Ok(0) => {
-                        info!("HTTP Server: Client disconnected before sending data");
-                        Err("ClientDisconnected")
-                    }
-                    Ok(n) => {
-                        read_len = n;
-                        Ok(())
-                    }
-                    Err(e) => {
-                        error!("HTTP Server: Read error: {:?}", e);
-                        Err("ReadError")
-                    }
+        let read_result = embassy_time::with_timeout(Duration::from_secs(10), async {
+            match socket.read(&mut request_buffer).await {
+                Ok(0) => {
+                    info!("HTTP Server: Client disconnected before sending data");
+                    Err("ClientDisconnected")
                 }
-            }).await;
+                Ok(n) => {
+                    read_len = n;
+                    Ok(())
+                }
+                Err(e) => {
+                    error!("HTTP Server: Read error: {:?}", e);
+                    Err("ReadError")
+                }
+            }
+        })
+        .await;
 
         if read_result.is_err() {
             warn!(
@@ -124,7 +122,9 @@ pub async fn http_server_task(
                                 payload.id.as_str(),
                                 payload.authorised
                             );
-                            display_sender.send(DisplayMessage::AuthStatus(payload.authorised)).await;
+                            display_sender
+                                .send(DisplayMessage::AuthStatus(payload.authorised))
+                                .await;
                             auth_payload = Some(payload);
                             response_status_code = "200 OK";
                             response_body_content = if auth_payload.as_ref().unwrap().authorised {
@@ -136,7 +136,10 @@ pub async fn http_server_task(
                         Err(e) => {
                             error!("HTTP Server: JSON parse error: {:?}", e);
                             if body_str.len() > 100 {
-                                error!("HTTP Server: Failed to parse body: {}...", &body_str[..100]);
+                                error!(
+                                    "HTTP Server: Failed to parse body: {}...",
+                                    &body_str[..100]
+                                );
                             } else {
                                 error!("HTTP Server: Failed to parse body: {}", body_str);
                             }
@@ -145,12 +148,17 @@ pub async fn http_server_task(
                         }
                     }
                 } else {
-                    warn!("HTTP Server: /authorised endpoint called (POST) but no JSON body found.");
+                    warn!(
+                        "HTTP Server: /authorised endpoint called (POST) but no JSON body found."
+                    );
                     response_status_code = "400 Bad Request";
                     response_body_content = "Missing JSON body for /authorised";
                 }
             } else {
-                warn!("HTTP Server: Unrecognized request path or method: {}", first_line);
+                warn!(
+                    "HTTP Server: Unrecognized request path or method: {}",
+                    first_line
+                );
                 response_status_code = "404 Not Found";
                 response_body_content = "Endpoint not found or method not allowed";
             }
@@ -168,7 +176,7 @@ pub async fn http_server_task(
         if let Err(e) = socket.write_all(http_response.as_bytes()).await {
             error!("HTTP Server: Failed to send response: {:?}", e);
         }
-        
+
         socket.close();
         socket.abort();
         info!("HTTP Server: Connection closed.");
