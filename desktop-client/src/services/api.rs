@@ -46,6 +46,7 @@ impl RustySecureApi for RustySecureApiImpl {
             .to_string();
 
         Ok((auth_url, state))
+        //This is a test for n8n will be deleted then..
     }
 
     async fn get_user_by_google_id(&self, id: String) -> Result<Option<User>, Error> {
