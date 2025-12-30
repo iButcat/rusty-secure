@@ -37,7 +37,7 @@ impl GoogleAuthServiceImpl {
             auth_url: "https://accounts.google.com/o/oauth2/v2/auth".to_string(),
             token_url: "https://www.googleapis.com/oauth2/v3/token".to_string(),
             revocation_url: "https://oauth2.googleapis.com/revoke".to_string(),
-            user_info_url: "https://www.googleapis.com/oauth2/v2/userinfo".to_string(),
+            user_info_url: "https://www.googleapis.com/oauth2/v3/userinfo".to_string(),
         }
     }
 }

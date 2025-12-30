@@ -4,6 +4,7 @@ use crate::models::Token;
 
 #[derive(Deserialize, Serialize)]
 pub struct UserInfo {
+    #[serde(alias = "sub")]
     pub id: String,
     pub email: String,
     pub name: String,
