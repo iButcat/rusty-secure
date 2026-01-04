@@ -37,14 +37,17 @@ impl GoogleAuthServiceImpl {
             auth_url: "https://accounts.google.com/o/oauth2/v2/auth".to_string(),
             token_url: "https://www.googleapis.com/oauth2/v3/token".to_string(),
             revocation_url: "https://oauth2.googleapis.com/revoke".to_string(),
-            user_info_url: "https://www.googleapis.com/oauth2/v2/userinfo".to_string(),
+            user_info_url: "https://www.googleapis.com/oauth2/v3/userinfo".to_string(),
         }
     }
 }
 
 #[async_trait]
 impl GoogleAuthService for GoogleAuthServiceImpl {
-    async fn get_authorisation_url(&self) -> Result<(String, String), Error> {
+    async fn get_authorisation_url(
+        &self,
+        response_type: Option<String>,
+    ) -> Result<(String, String), Error> {
         let auth_url = AuthUrl::new(self.auth_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
         let token_url =
@@ -62,8 +65,15 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
                     .expect("Invalid revocation endpoints URL"),
             );
 
+        let random_token = CsrfToken::new_random();
+        let final_token = if let Some(value) = response_type {
+            CsrfToken::new(format!("{}:{}", random_token.secret(), value))
+        } else {
+            random_token
+        };
+
         let (authorize_url, crsf_state) = client
-            .authorize_url(CsrfToken::new_random)
+            .authorize_url(|| final_token)
             .add_scopes(
                 self.scope
                     .split_whitespace()

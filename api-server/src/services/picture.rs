@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use bson::Uuid;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -30,7 +31,6 @@ impl PictureServiceImpl {
 }
 
 #[async_trait]
-// TODO: Better error handle, got lazy :)
 impl PictureService for PictureServiceImpl {
     async fn upload_and_register_picture(
         &self,
@@ -62,4 +62,6 @@ impl PictureService for PictureServiceImpl {
             Err(Error::Empty("Image data is empty".to_string()))
         }
     }
+
+    async fn get_all(user_id: Uuid) -> Result<Vec<Picture>, Error> {}
 }

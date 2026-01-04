@@ -7,7 +7,7 @@ pub struct User {
     pub email: String,
     pub name: String,
     pub picture: Option<String>,
-    pub created_at: DateTime<Local>,
+    pub created_at: Option<DateTime<Local>>,
     pub updated_at: Option<DateTime<Local>>,
 }
 
@@ -17,7 +17,7 @@ impl User {
         email: String,
         name: String,
         picture: Option<String>,
-        created_at: DateTime<Local>,
+        created_at: Option<DateTime<Local>>,
         updated_at: Option<DateTime<Local>>,
     ) -> Self {
         User {

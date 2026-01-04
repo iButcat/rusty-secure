@@ -14,7 +14,7 @@ use async_trait::async_trait;
 use bson::Uuid;
 
 use crate::errors::Error;
-use crate::models::{Token, User};
+use crate::models::{Picture, Token, User};
 use crate::payloads::{StatusResponse, UserInfo};
 
 // NOTE: Service should return a model then the API layer convert to payload..
@@ -36,11 +36,15 @@ pub trait PictureService: Send + Sync {
         &self,
         image_data: Vec<u8>,
     ) -> Result<StatusResponse, Error>;
+    async fn get_all(user_id: Uuid) -> Result<Vec<Picture>, Error>;
 }
 
 #[async_trait]
 pub trait GoogleAuthService: Send + Sync {
-    async fn get_authorisation_url(&self) -> Result<(String, String), Error>;
+    async fn get_authorisation_url(
+        &self,
+        response_type: Option<String>,
+    ) -> Result<(String, String), Error>;
     async fn exchange_code_for_token(
         &self,
         code: String,

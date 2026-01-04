@@ -1,4 +1,5 @@
 use crate::app::Page;
+use crate::models::User;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -8,7 +9,6 @@ pub enum Message {
     SetError(String),
     ClearError,
 
-    Login(String, String),
     Logout,
 
     FetchData,
@@ -16,7 +16,11 @@ pub enum Message {
 
     ButtonPressed,
     TextChanged(String),
-    UsernameChanged(String),
-    PasswordChanged(String),
     CheckboxToggled(bool),
+
+    LoginWithGoogle,
+    AuthUrlReceived(Result<(String, String), String>),
+    TokenInputChanged(String),
+    SubmitToken,
+    UserFetched(Result<Option<User>, String>),
 }
