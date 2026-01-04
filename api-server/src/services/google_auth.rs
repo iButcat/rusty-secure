@@ -44,7 +44,10 @@ impl GoogleAuthServiceImpl {
 
 #[async_trait]
 impl GoogleAuthService for GoogleAuthServiceImpl {
-    async fn get_authorisation_url(&self) -> Result<(String, String), Error> {
+    async fn get_authorisation_url(
+        &self,
+        response_type: Option<String>,
+    ) -> Result<(String, String), Error> {
         let auth_url = AuthUrl::new(self.auth_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
         let token_url =
@@ -62,8 +65,15 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
                     .expect("Invalid revocation endpoints URL"),
             );
 
+        let random_token = CsrfToken::new_random();
+        let final_token = if let Some(value) = response_type {
+            CsrfToken::new(format!("{}:{}", random_token.secret(), value))
+        } else {
+            random_token
+        };
+
         let (authorize_url, crsf_state) = client
-            .authorize_url(CsrfToken::new_random)
+            .authorize_url(|| final_token)
             .add_scopes(
                 self.scope
                     .split_whitespace()

@@ -6,7 +6,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            api_base_url: "http://localhost:8080".to_string(),
+            api_base_url: "http://0.0.0.0:8080".to_string(),
         }
     }
 }

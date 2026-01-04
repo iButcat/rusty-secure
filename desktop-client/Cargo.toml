@@ -8,6 +8,16 @@ edition = "2024"
 [dependencies]
 chrono = { version = "0.4.40", features = ["serde"] }
 google-oauth = "1.11.3"
-iced = "0.13.1"
+iced = { version = "0.13.1", features = ["tokio"] }
 reqwest = { version = "0.12.15", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
 serde = "1.0.228"
+webbrowser = "1.0.6"
+serde_json = "1.0.148"
+
+[package.metadata.bundle]
+name = "desktop-client"
+identifier = "com.iButcat.desktop-client"
+icon = ["assets/icons/icon.png"]
+version = "1.0.0"
+copyright = "Copyright 2025 iButcat"

@@ -1,10 +1,11 @@
 mod app;
 use app::run;
 
-mod services;
 mod errors;
 mod models;
+mod services;
 
-pub fn main() -> iced::Result {
+#[tokio::main]
+async fn main() -> iced::Result {
     run()
 }

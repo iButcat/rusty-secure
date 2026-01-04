@@ -1,3 +1,7 @@
+use reqwest::Client;
+
+use crate::services::RustySecureApiImpl;
+
 #[derive(Debug, Clone)]
 pub enum Page {
     Home,
@@ -10,9 +14,10 @@ pub struct AppState {
     pub current_page: Page,
     pub loading: bool,
     pub error_message: Option<String>,
-    pub username: String,
-    pub password: String,
     pub user_logged_in: bool,
+    pub api_service: RustySecureApiImpl,
+    pub token_input: String,
+    pub user: Option<crate::models::User>,
 }
 
 impl Default for AppState {
@@ -21,9 +26,10 @@ impl Default for AppState {
             current_page: Page::Login,
             loading: false,
             error_message: None,
-            username: String::new(),
-            password: String::new(),
             user_logged_in: false,
+            api_service: RustySecureApiImpl::new(Client::new(), "http://0.0.0.0:8080".to_string()),
+            token_input: String::new(),
+            user: None,
         }
     }
 }
