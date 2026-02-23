@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use bson::Uuid;
+use futures_util::TryStreamExt;
 use mongodb::{bson::doc, Client, Collection};
 
 use super::{PictureRepository, StatusRepository};
@@ -70,6 +71,21 @@ impl PictureRepository for MongoRepository {
             .find_one(doc! {"_id": id})
             .await
             .map_err(|e| Error::Database(e.to_string()))
+    }
+
+    async fn find_by_user_id(&self, user_id: Uuid) -> Result<Vec<Picture>, Error> {
+        let cursor = self
+            .picture_collection()
+            .find(doc! {"user_id": user_id})
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
+
+        let pictures: Vec<Picture> = cursor
+            .try_collect()
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?;
+
+        Ok(pictures)
     }
 
     async fn insert(&self, picture: &Picture) -> Result<(), Error> {

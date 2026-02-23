@@ -6,15 +6,14 @@ use oauth2::{
     Scope, TokenResponse, TokenUrl,
 };
 
-use super::GoogleAuthService;
+use super::AuthService;
 use crate::errors::Error;
-use crate::models::Token;
+use crate::models::{Token, User};
 use crate::payloads::UserInfo;
 
-pub struct GoogleAuthServiceImpl {
-    client_id: String,
-    client_secret: String,
-    redirect_url: String,
+pub struct AuthServiceImpl {
+    client: reqwest::Client,
+    oauth_client: BasicClient,
     scope: String,
     auth_url: String,
     token_url: String,
@@ -22,17 +21,21 @@ pub struct GoogleAuthServiceImpl {
     user_info_url: String,
 }
 
-impl GoogleAuthServiceImpl {
+impl AuthServiceImpl {
     pub fn new(
         client_id: String,
         client_secret: String,
         redirect_url: String,
         scope: String,
     ) -> Self {
+        let oauth_client = BasicClient::new(ClientId::new(client_id))
+            .set_client_secret(ClientSecret::new(client_secret))
+            .set_redirect_uri(
+                RedirectUrl::new(redirect_url).expect("Error while trying to set the redirect url"),
+            );
         Self {
-            client_id,
-            client_secret,
-            redirect_url,
+            client: reqwest::Client::new(),
+            oauth_client,
             scope,
             auth_url: "https://accounts.google.com/o/oauth2/v2/auth".to_string(),
             token_url: "https://www.googleapis.com/oauth2/v3/token".to_string(),
@@ -43,7 +46,7 @@ impl GoogleAuthServiceImpl {
 }
 
 #[async_trait]
-impl GoogleAuthService for GoogleAuthServiceImpl {
+impl AuthService for AuthServiceImpl {
     async fn get_authorisation_url(
         &self,
         response_type: Option<String>,
@@ -53,13 +56,11 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
         let token_url =
             TokenUrl::new(self.token_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
-        let client = BasicClient::new(ClientId::new(self.client_id.clone()))
-            .set_client_secret(ClientSecret::new(self.client_secret.clone()))
+        let client = self
+            .oauth_client
+            .clone()
             .set_auth_uri(auth_url?)
             .set_token_uri(token_url?)
-            .set_redirect_uri(
-                RedirectUrl::new(self.redirect_url.clone()).expect("Invalid redirect URL"),
-            )
             .set_revocation_url(
                 RevocationUrl::new(self.revocation_url.clone())
                     .expect("Invalid revocation endpoints URL"),
@@ -93,15 +94,13 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
         let token_url =
             TokenUrl::new(self.token_url.clone()).map_err(|e| Error::Parse(e.to_string()));
 
-        let client = BasicClient::new(ClientId::new(self.client_id.clone()))
-            .set_client_secret(ClientSecret::new(self.client_secret.clone()))
+        let client = self
+            .oauth_client
+            .clone()
             .set_auth_uri(auth_url.map_err(|e| Error::Parse(e.to_string()))?)
-            .set_token_uri(token_url.map_err(|e| Error::Parse(e.to_string()))?)
-            .set_redirect_uri(
-                RedirectUrl::new(self.redirect_url.clone()).expect("Invalid redirect URL"),
-            );
+            .set_token_uri(token_url.map_err(|e| Error::Parse(e.to_string()))?);
 
-        let http_client = reqwest::Client::new();
+        let http_client = self.client.clone();
 
         let token_response = client
             .exchange_code(AuthorizationCode::new(code))
@@ -129,7 +128,7 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
             .unwrap_or_default();
 
         let user_info_response: reqwest::Response = http_client
-            .get(self.user_info_url.clone())
+            .get(&self.user_info_url)
             .bearer_auth(access_token)
             .send()
             .await
@@ -149,5 +148,36 @@ impl GoogleAuthService for GoogleAuthServiceImpl {
         );
 
         Ok((user_info, token))
+    }
+
+    async fn verify_token(&self, token: String) -> Result<(bool, User), Error> {
+        let res = self
+            .client
+            .get("https://oauth2.googleapis.com/tokeninfo")
+            .query(&[("access_token", &token)])
+            .send()
+            .await
+            .map_err(|e| Error::Service(e.to_string()))?;
+
+        let user_info_response: reqwest::Response = self
+            .client
+            .get(&self.user_info_url)
+            .bearer_auth(&token)
+            .send()
+            .await
+            .map_err(|e| Error::Internal(e.to_string()))?;
+
+        let user_info: UserInfo = user_info_response
+            .json()
+            .await
+            .map_err(|e| Error::JSONUnmarshall(e.to_string()))?;
+
+        let user = User::new(
+            user_info.id,
+            user_info.email,
+            user_info.name,
+            user_info.picture,
+        );
+        Ok((res.status().is_success(), user))
     }
 }

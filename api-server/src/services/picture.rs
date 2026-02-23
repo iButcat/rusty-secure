@@ -34,6 +34,7 @@ impl PictureServiceImpl {
 impl PictureService for PictureServiceImpl {
     async fn upload_and_register_picture(
         &self,
+        user_id: Uuid,
         image_data: Vec<u8>,
     ) -> Result<StatusResponse, Error> {
         if !image_data.is_empty() {
@@ -48,7 +49,7 @@ impl PictureService for PictureServiceImpl {
                 .upload_file(&object_name, image_data)
                 .await?;
 
-            let new_picture = Picture::new(object_name, url);
+            let new_picture = Picture::new(user_id, object_name, url);
             let picture_id = new_picture.id;
             self.picture_repo.insert(&new_picture).await?;
 
@@ -63,5 +64,11 @@ impl PictureService for PictureServiceImpl {
         }
     }
 
-    async fn get_all(user_id: Uuid) -> Result<Vec<Picture>, Error> {}
+    async fn get_all(&self, user_id: Uuid) -> Result<Vec<Picture>, Error> {
+        return self
+            .picture_repo
+            .find_by_user_id(user_id)
+            .await
+            .map_err(|e| Error::Service(e.to_string()));
+    }
 }

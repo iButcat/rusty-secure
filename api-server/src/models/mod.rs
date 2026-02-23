@@ -9,3 +9,6 @@ pub use user::User;
 
 mod token;
 pub use token::Token;
+
+mod device;
+pub use device::{Device, DeviceType};

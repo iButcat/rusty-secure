@@ -18,7 +18,7 @@ pub async fn callback(
     let code = callback_data.code;
     println!("State: {}, code: {}", state, code);
     let (user_info, token) = data
-        .goolge_auth_service
+        .auth_service
         .exchange_code_for_token(code, state)
         .await
         .map_err(|e| Error::Internal(e.to_string()))?;
@@ -88,7 +88,7 @@ pub async fn auth_url(
     data: web::Data<AppState>,
 ) -> Result<impl Responder, Error> {
     let (url, state) = data
-        .goolge_auth_service
+        .auth_service
         .get_authorisation_url(query.response_type.clone())
         .await
         .map_err(|e| Error::Internal(e.to_string()))?;

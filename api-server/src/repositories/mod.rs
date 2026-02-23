@@ -25,6 +25,7 @@ pub trait StatusRepository: Send + Sync {
 #[async_trait]
 pub trait PictureRepository: Send + Sync {
     async fn find_by_id(&self, id: Uuid) -> Result<Option<Picture>, Error>;
+    async fn find_by_user_id(&self, user_id: Uuid) -> Result<Vec<Picture>, Error>;
     async fn insert(&self, picture: &Picture) -> Result<(), Error>;
 }
 

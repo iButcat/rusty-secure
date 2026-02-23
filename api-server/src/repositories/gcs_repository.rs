@@ -49,9 +49,6 @@ impl StorageRepository for GcsRepository {
             .await
             .map_err(|e| Error::Storage(e.to_string()))?;
 
-        // NOTE: remove logs and keep only for errors
-        println!("Successfully uploaded to GSC: {}", object.name);
-
         Ok(format!(
             "{}/{}/{}/{}",
             GOOGLE_STORAGE_BASE_URL, self.bucket_name, GOOGLE_STORAGE_BASE_PATH, object.name

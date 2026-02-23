@@ -12,6 +12,9 @@ use app_state::AppState;
 mod handlers;
 use handlers::{get_status, patch_authorised, post_picture};
 
+mod middlewares;
+use middlewares::CheckAuthToken;
+
 mod repositories;
 use repositories::{
     GcsRepository, MongoRepository, PictureRepository, StatusRepository, StorageRepository,
@@ -30,7 +33,7 @@ use services::{PictureServiceImpl, StatusServiceImpl};
 use crate::{
     handlers::{auth_url, callback, get_by_google_id},
     repositories::UserRepository,
-    services::{GoogleAuthServiceImpl, UserServiceImpl},
+    services::{AuthServiceImpl, UserServiceImpl},
 };
 
 mod errors;
@@ -86,7 +89,7 @@ async fn main() -> std::io::Result<()> {
         status_service.clone(),
     ));
     let user_service = Arc::new(UserServiceImpl::new(user_repository.clone()));
-    let goolge_auth_service = Arc::new(GoogleAuthServiceImpl::new(
+    let auth_service = Arc::new(AuthServiceImpl::new(
         config.google_auth_client_id,
         config.google_auth_client_secret,
         config.google_auth_redirect_url,
@@ -100,7 +103,7 @@ async fn main() -> std::io::Result<()> {
             status_service: status_service.clone(),
             picture_service: picture_service.clone(),
             user_service: user_service.clone(),
-            goolge_auth_service: goolge_auth_service.clone(),
+            auth_service: auth_service.clone(),
         };
 
         App::new()
@@ -110,7 +113,12 @@ async fn main() -> std::io::Result<()> {
             .service(patch_authorised)
             .service(auth_url)
             .service(callback)
-            .service(get_by_google_id)
+            .service(
+                // TODO: validate the logic with the middleware
+                web::scope("/api/admin")
+                    .wrap(CheckAuthToken)
+                    .service(get_by_google_id),
+            )
     })
     .bind("0.0.0.0:8080")?
     .run()
