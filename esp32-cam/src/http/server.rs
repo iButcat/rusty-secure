@@ -1,6 +1,4 @@
 use anyhow::{Context, Result};
-use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
-use embassy_sync::blocking_mutex::Mutex as BlockingMutex;
 use embedded_svc::http::client::Client as HttpClientTrait;
 use embedded_svc::io::Write;
 use esp_idf_hal::delay::FreeRtos;
@@ -11,14 +9,14 @@ use esp_idf_svc::http::Method;
 use log::{error, info};
 use serde_json;
 use std::sync::Arc;
-use std::sync::Mutex as StdMutex;
+use std::sync::Mutex;
 
 use crate::cam::camera_controller::CameraController;
 use crate::http::client::CameraHttpClient;
 use crate::http::StatusResponse;
 
-type SharedFlashPin<'a> = Arc<StdMutex<PinDriver<'a, Gpio4, Output>>>;
-type SharedCamera<'a> = Arc<BlockingMutex<CriticalSectionRawMutex, CameraController<'a>>>;
+type SharedFlashPin<'a> = Arc<Mutex<PinDriver<'a, Gpio4, Output>>>;
+type SharedCamera<'a> = Arc<Mutex<CameraController<'a>>>;
 
 pub struct CameraHttpServer<'a> {
     server: EspHttpServer<'a>,
@@ -54,12 +52,13 @@ impl<'a> CameraHttpServer<'a> {
             } else {
                 info!("Flash LED turned ON");
                 FreeRtos::delay_ms(500);
-                // TODO remove useless logs
                 info!("Flash LED turned OFF");
             }
 
-            let image_data: Option<Vec<u8>> =
-                camera.lock(|cam_controller| cam_controller.capture());
+            let image_data: Option<Vec<u8>> = {
+                let cam_guard = camera.lock().unwrap();
+                cam_guard.capture()
+            };
 
             let flash_off_result = match flash_led.lock() {
                 Ok(mut guard) => guard.set_low(),
